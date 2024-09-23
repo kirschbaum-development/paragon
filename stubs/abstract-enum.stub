@@ -1,0 +1,38 @@
+{{ Imports }}export class ValueError extends Error {
+    constructor(className: string, value: number | string) {
+        super(`${value} is not a valid backing value for enum ${className}`);
+    }
+}
+
+export interface Enumerable {
+    cases(): array<{ name: string; values: any }>;
+    from(value: number | string): object;
+    tryFrom(value: number | string): object | null;
+}
+
+abstract class {{ Abstract }} implements Enumerable {
+    public static cases() {
+        return Object.entries(this.items).map(([name, item]) => ({
+            name,
+            value: item.value,
+        }));
+    }
+
+    public static from(value: number | string) {
+        const enumCase = this.cases().find(item => item.value === value);
+
+        if (enumCase === undefined) {
+            throw new ValueError(this.name, value);
+        }
+
+        return this[enumCase.name];
+    }
+
+    public static tryFrom(value: number | string) {
+        const enumCase = this.cases().find(item => item.value === value);
+
+        return enumCase ? this[enumCase.name] : null;
+    }
+}
+{{ Methods }}
+export default {{ Abstract }};

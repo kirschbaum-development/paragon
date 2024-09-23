@@ -1,0 +1,15 @@
+import {{ Abstract }} from '{{ Path }}{{ Abstract }}.ts';
+
+type {{ Enum }}Definition = {
+    name: string;{{ TypeDefinition }}
+};
+
+class {{ Enum }} extends {{ Abstract }} {
+    protected static items = Object.freeze({
+{{ Cases }},
+    });
+
+{{ Getters }}
+}
+
+export default {{ Enum }};

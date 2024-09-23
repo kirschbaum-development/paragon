@@ -1,0 +1,4 @@
+export default function {{ Method }}() {
+    // Start building your custom enum method!
+    return this.items;
+}

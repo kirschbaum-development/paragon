@@ -1,0 +1,38 @@
+{
+    "name": "kirschbaum-development/paragon",
+    "description": "A Laravel package for generating enum-like objects in typescript based on PHP enum classes.",
+    "keywords": [
+        "laravel",
+        "actions",
+        "events"
+    ],
+    "homepage": "https://github.com/kirschbaum-development/paragon",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Brandon Ferens",
+            "email": "brandon@kirschbaumdevelopment.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kirschbaum\\Paragon\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Kirschbaum\\Paragon\\ParagonServiceProvider"
+            ]
+        }
+    }
+}
