@@ -66,21 +66,18 @@ class AbstractEnumGenerator
 
         return collect($files)
             ->mapWithKeys(function ($file) {
-                $abstractPath = config('paragon.enums.paths.generated');
-                $filePath = str($file->getPath())
+                $abstractPath = collect(explode('/', config('paragon.enums.paths.generated')));
+                $relativeFilePath = str($file->getPath())
                     ->after(resource_path())
                     ->ltrim('/')
-                    ->explode('/');
-
-                $relativePath = collect(explode('/', $abstractPath))
-                    ->diff($filePath)
-                    ->map(fn () => '..')
-                    ->merge($filePath->diff(explode('/', $abstractPath)))
+                    ->explode('/')
+                    ->map(fn ($directory, $index) => data_get($abstractPath, $index) === $directory ? '..' : $directory)
+                    ->filter()
                     ->join('/');
 
                 $name = (string) str($file->getFileName())->before('.');
 
-                return [$name => "import {$name} from '{$relativePath}/{$file->getFilename()}';" . PHP_EOL];
+                return [$name => "import {$name} from '{$relativeFilePath}/{$file->getFilename()}';" . PHP_EOL];
             })
             ->sort();
     }
