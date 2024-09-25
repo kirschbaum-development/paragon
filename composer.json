@@ -16,12 +16,26 @@
         }
     ],
     "require": {
-        "php": "^8.1"
+        "php": "^8.1",
+        "illuminate/filesystem": ">=10.0",
+        "illuminate/support": ">=10.0"
+    },
+    "require-dev": {
+        "laravel/framework": ">=10.0",
+        "laravel/pint": "^1.18"
     },
     "autoload": {
         "psr-4": {
             "Kirschbaum\\Paragon\\": "src/"
         }
+    },
+    "scripts": {
+        "pint": [
+            "./vendor/bin/pint"
+        ],
+        "pint-check": [
+            "./vendor/bin/pint --test"
+        ]
     },
     "config": {
         "sort-packages": true

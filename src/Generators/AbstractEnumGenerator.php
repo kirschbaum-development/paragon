@@ -24,11 +24,6 @@ class AbstractEnumGenerator
         $this->files->put($this->path(), $this->contents());
     }
 
-    public static function generate()
-    {
-        return (new self())();
-    }
-
     /**
      * Inject all prepared data into the stub.
      */

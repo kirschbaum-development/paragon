@@ -57,16 +57,6 @@ class EnumGenerator
     }
 
     /**
-     * Initiate enum file generation.
-     *
-     * @throws ReflectionException
-     */
-    public static function generate(string $enum): bool
-    {
-        return (new self($enum))();
-    }
-
-    /**
      * Typescript enum file contents.
      */
     protected function contents(): string
@@ -122,9 +112,7 @@ class EnumGenerator
     protected function buildTypeDefinition(): string
     {
         return $this->methods()
-            ->map(function ($method) {
-                return PHP_EOL . "    {$method->getName()}();";
-            })
+            ->map(fn ($method) => PHP_EOL . "    {$method->getName()}();")
             ->sortDesc()
             ->when(
                 $this->reflector->isBacked(),
@@ -163,9 +151,8 @@ class EnumGenerator
             ->map(function ($case) {
                 $value = $this->caseValueProperty($case);
 
-                $methodValues = $this->methods()->map(function (ReflectionMethod $method) use ($case) {
-                    return $this->caseMethods($method, $case);
-                });
+                $methodValues = $this->methods()
+                    ->map(fn (ReflectionMethod $method) => $this->caseMethods($method, $case));
 
                 return $this->assembleCaseObject($case, $value, $methodValues);
             })
@@ -229,9 +216,7 @@ class EnumGenerator
     protected function buildGetters(Collection $cases): string
     {
         return $cases
-            ->map(function ($case) {
-                return $this->assembleCaseGetter($case);
-            })
+            ->map(fn ($case) => $this->assembleCaseGetter($case))
             ->join(PHP_EOL . PHP_EOL);
     }
 

@@ -31,7 +31,7 @@ class MakeEnumMethodCommand extends GeneratorCommand
     {
         parent::handle();
 
-        AbstractEnumGenerator::generate();
+        app(AbstractEnumGenerator::class)();
 
         $this->components
             ->info("Abstract enum class has been rebuilt to include new [{$this->argument('name')}] method.");
@@ -79,6 +79,6 @@ class MakeEnumMethodCommand extends GeneratorCommand
      */
     protected function getPath($name): string
     {
-        return resource_path(config('paragon.enums.paths.methods')) . DIRECTORY_SEPARATOR . $this->argument('name') . '.ts';
+        return resource_path(config('paragon.enums.paths.methods')) . "/{$this->argument('name')}.ts";
     }
 }

@@ -18,14 +18,12 @@ class GenerateEnumsCommand extends Command
     public function handle(): int
     {
         $generatedEnums = $this->enums()
-            ->map(function ($enum) {
-                return EnumGenerator::generate($enum);
-            })
+            ->map(fn ($enum) => app(EnumGenerator::class, ['enum' => $enum])())
             ->filter();
 
         $this->components->info("{$generatedEnums->count()} enums have been (re)generated.");
 
-        AbstractEnumGenerator::generate();
+        app(AbstractEnumGenerator::class)();
 
         $this->components->info('Abstract enum class has been (re)generated.');
 
