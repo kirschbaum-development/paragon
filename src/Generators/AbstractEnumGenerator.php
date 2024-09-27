@@ -64,6 +64,7 @@ class AbstractEnumGenerator
                 $abstractPath = collect(explode('/', config('paragon.enums.paths.generated')));
                 $relativeFilePath = str($file->getPath())
                     ->after(resource_path())
+                    ->replace('\\', '/')
                     ->ltrim('/')
                     ->explode('/')
                     ->map(fn ($directory, $index) => data_get($abstractPath, $index) === $directory ? '..' : $directory)
