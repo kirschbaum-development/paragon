@@ -22,11 +22,15 @@
     },
     "require-dev": {
         "laravel/framework": ">=10.0",
-        "laravel/pint": "^1.18"
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^9.5",
+        "pestphp/pest": "^3.2",
+        "pestphp/pest-plugin-laravel": "^3.0"
     },
     "autoload": {
         "psr-4": {
-            "Kirschbaum\\Paragon\\": "src/"
+            "Kirschbaum\\Paragon\\": "src/",
+            "Kirschbaum\\Paragon\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -38,7 +42,10 @@
         ]
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
