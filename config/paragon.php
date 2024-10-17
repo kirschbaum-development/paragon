@@ -10,4 +10,10 @@ return [
             'methods' => 'js/vendors/paragon/enums',
         ],
     ],
+    'events' => [
+        'paths' => [
+            'php' => app_path(),
+            'generated' => 'js/events',
+        ],
+    ],
 ];

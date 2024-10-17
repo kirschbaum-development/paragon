@@ -4,29 +4,26 @@ namespace Kirschbaum\Paragon\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\File;
 use Kirschbaum\Paragon\Concerns\DiscoverEnums;
 use Kirschbaum\Paragon\Generators\AbstractEnumGenerator;
-use Kirschbaum\Paragon\Generators\EnumGenerator;
+use Kirschbaum\Paragon\Generators\EventGenerator;
 use Symfony\Component\Console\Attribute\AsCommand;
 
-#[AsCommand(name: 'paragon:generate-enums', description: 'Generate Typescript versions of existing PHP enums')]
-class GenerateEnumsCommand extends Command
+#[AsCommand(name: 'paragon:generate-events', description: 'Generate Typescript versions of existing Laravel Events')]
+class GenerateEventsCommand extends Command
 {
     /**
      * Execute the console command.
      */
     public function handle(): int
     {
-        $generatedEnums = $this->enums()
-            ->map(fn ($enum) => app(EnumGenerator::class, ['enum' => $enum])())
-            ->filter();
+        app(EventGenerator::class)();
 
-        $this->components->info("{$generatedEnums->count()} enums have been (re)generated.");
+//        $this->components->info("{$generatedEnums->count()} enums have been (re)generated.");
 
-        app(AbstractEnumGenerator::class)();
+//        app(AbstractEnumGenerator::class)();
 
-        $this->components->info('Abstract enum class has been (re)generated.');
+//        $this->components->info('Abstract enum class has been (re)generated.');
 
         return self::SUCCESS;
     }
