@@ -75,7 +75,7 @@ class EnumGenerator
     /**
      * Get the path to the stubs.
      */
-    public function stubPath(): string
+    protected function stubPath(): string
     {
         return __DIR__ . '/../../stubs/enum.stub';
     }

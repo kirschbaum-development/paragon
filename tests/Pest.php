@@ -4,10 +4,11 @@ use Illuminate\Support\Facades\File;
 use Kirschbaum\Paragon\Tests\TestCase;
 
 uses(TestCase::class)->in(__DIR__);
+
 function setupStatusEnumTestCase($app): void
 {
+    $fixturePath = __DIR__ . DIRECTORY_SEPARATOR . 'Fixtures';
 
-    $fixturePath = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Fixtures';
     File::makeDirectory(app_path('Enums'), force: true);
     File::copyDirectory($fixturePath, app_path('Enums'));
 
