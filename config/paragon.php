@@ -5,7 +5,8 @@ return [
         'abstract-class' => 'Enum',
 
         'paths' => [
-            'php' => app_path(),
+            'php' => '',
+            'ignore' => [],
             'generated' => 'js/enums',
             'methods' => 'js/vendors/paragon/enums',
         ],

@@ -18,7 +18,8 @@
     "require": {
         "php": "^8.1",
         "illuminate/filesystem": ">=10.0",
-        "illuminate/support": ">=10.0"
+        "illuminate/support": ">=10.0",
+        "symfony/filesystem": "^7.1"
     },
     "require-dev": {
         "laravel/framework": ">=10.0",
@@ -33,7 +34,15 @@
             "Kirschbaum\\Paragon\\Tests\\": "tests"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\": "vendor/orchestra/testbench-core/laravel/app"
+        }
+    },
     "scripts": {
+        "pest": [
+            "./vendor/bin/pest"
+        ],
         "pint": [
             "./vendor/bin/pint"
         ],
