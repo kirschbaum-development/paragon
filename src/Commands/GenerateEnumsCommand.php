@@ -37,12 +37,16 @@ class GenerateEnumsCommand extends Command
     /**
      * Gather all enum namespaces for searching.
      *
-     * @return Collection<int, non-falsy-string>
+     * @return Collection<int, class-string>
      */
     protected function enums(): Collection
     {
         return DiscoverEnums::within(app_path(config('paragon.enums.paths.php')))
             ->reject(function ($enum) {
+                if (! enum_exists($enum)) {
+                    return true;
+                }
+
                 $reflector = new ReflectionEnum($enum);
 
                 $paths = Arr::map(Arr::wrap(config('paragon.enums.paths.ignore')), function ($path) {
@@ -50,7 +54,7 @@ class GenerateEnumsCommand extends Command
                 });
 
                 return $reflector->getAttributes(IgnoreParagon::class)
-                    || Str::startsWith($reflector->getFileName(), $paths);
+                    || Str::startsWith((string) $reflector->getFileName(), $paths);
             })
             ->values();
     }

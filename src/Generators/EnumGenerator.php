@@ -28,8 +28,6 @@ class EnumGenerator
 
     /**
      * Create new EnumGenerator instance.
-     *
-     * @throws ReflectionException
      */
     public function __construct(protected string $enum)
     {
@@ -40,6 +38,10 @@ class EnumGenerator
         $this->cache = Storage::createLocalDriver([
             'root' => storage_path('framework/cache/paragon'),
         ]);
+
+        if (! enum_exists($this->enum)) {
+            return;
+        }
 
         $this->reflector = new ReflectionEnum($this->enum);
     }
@@ -64,7 +66,7 @@ class EnumGenerator
     {
         $code = $this->prepareEnumCode();
 
-        return str(file_get_contents($this->stubPath()))
+        return str((string) file_get_contents($this->stubPath()))
             ->replace('{{ Path }}', $this->relativePath())
             ->replace('{{ Enum }}', class_basename($this->enum))
             ->replace('{{ Abstract }}', config('paragon.enums.abstract-class'))
@@ -274,12 +276,12 @@ class EnumGenerator
 
     protected function cacheFilename(): string
     {
-        return md5($this->reflector->getFileName());
+        return md5((string) $this->reflector->getFileName());
     }
 
     protected function cachedFile(): string
     {
-        return md5_file($this->reflector->getFileName());
+        return (string) md5_file((string) $this->reflector->getFileName());
     }
 
     protected function cacheEnum(): void

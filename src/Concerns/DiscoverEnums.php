@@ -16,7 +16,7 @@ class DiscoverEnums
      *
      * @param array<int, string>|string $path
      *
-     * @return Collection<string, non-falsy-string>
+     * @return Collection<class-string, class-string>
      */
     public static function within(array|string $path): Collection
     {
@@ -26,14 +26,18 @@ class DiscoverEnums
     /**
      * Filter the files down to only enums.
      *
-     * @return Collection<string, non-falsy-string>
+     * @return Collection<class-string, class-string>
      */
     protected static function getEnums(Finder $files): Collection
     {
         return collect($files)
             ->mapWithKeys(function ($file) {
                 try {
-                    $reflector = new ReflectionClass($enum = static::classFromFile($file));
+                    if (! class_exists($enum = static::classFromFile($file))) {
+                        return [];
+                    }
+
+                    $reflector = new ReflectionClass($enum);
                 } catch (ReflectionException) {
                     return [];
                 }
