@@ -102,7 +102,7 @@ class EnumGenerator
         $depth = str($this->enum)->after('App\\Enums\\')->explode('\\')->count() - 1;
 
         return $depth
-            ? collect(range(1, $depth))->transform(fn () => '../')->join('')
+            ? collect(range(1, $depth))->map(fn () => '../')->join('')
             : './';
     }
 
