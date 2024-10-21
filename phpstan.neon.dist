@@ -2,18 +2,11 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-
     paths:
         - config/
         - src/
 
-    # Level 9 is the highest level
     level: 8
 
     ignoreErrors:
         - '#Access to an undefined property UnitEnum::\$value.#'
-#
-#    excludePaths:
-#        - ./*/*/FileToBeExcluded.php
-#
-#    checkMissingIterableValueType: false
