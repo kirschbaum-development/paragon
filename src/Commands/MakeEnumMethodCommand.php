@@ -19,7 +19,7 @@ class MakeEnumMethodCommand extends GeneratorCommand
      *
      * @throws FileNotFoundException
      */
-    public function handle(): int
+    public function handle(): ?bool
     {
         parent::handle();
 
@@ -28,7 +28,7 @@ class MakeEnumMethodCommand extends GeneratorCommand
         $this->components
             ->info("Abstract enum class has been rebuilt to include new [{$this->argument('name')}] method.");
 
-        return self::SUCCESS;
+        return true;
     }
 
     /**
