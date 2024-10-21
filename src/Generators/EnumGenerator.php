@@ -67,9 +67,9 @@ class EnumGenerator
             ->replace('{{ Path }}', $this->relativePath())
             ->replace('{{ Enum }}', class_basename($this->enum))
             ->replace('{{ Abstract }}', config('paragon.enums.abstract-class'))
-            ->replace('{{ TypeDefinition }}', $code->type)
-            ->replace('{{ Cases }}', $code->cases)
-            ->replace('{{ Getters }}', $code->getters);
+            ->replace('{{ TypeDefinition }}', $code->get('type'))
+            ->replace('{{ Cases }}', $code->get('cases'))
+            ->replace('{{ Getters }}', $code->get('getters'));
     }
 
     /**
