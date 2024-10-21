@@ -33,7 +33,7 @@ class AbstractEnumGenerator
         $imports = $this->imports();
         $suffix = $imports->count() ? PHP_EOL : '';
 
-        return str(file_get_contents($this->stubPath()))
+        return str((string) file_get_contents($this->stubPath()))
             ->replace('{{ Abstract }}', config('paragon.enums.abstract-class'))
             ->replace('{{ Imports }}', "{$imports->join('')}{$suffix}")
             ->replace('{{ Methods }}', "{$this->methods($imports->keys())}{$suffix}");
@@ -49,6 +49,8 @@ class AbstractEnumGenerator
 
     /**
      * Build out the actual enum case object including the name, value if needed, and any public methods.
+     *
+     * @return Collection<string, string>
      */
     protected function imports(): Collection
     {
@@ -78,6 +80,8 @@ class AbstractEnumGenerator
 
     /**
      * Build out the actual enum case object including the name, value if needed, and any public methods.
+     *
+     * @param  Collection<int, string>  $methods
      */
     protected function methods(Collection $methods): string
     {

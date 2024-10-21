@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Fluent;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use ReflectionEnum;
-use ReflectionException;
+use ReflectionEnumUnitCase;
 use ReflectionMethod;
 
 class EnumGenerator
@@ -27,8 +27,6 @@ class EnumGenerator
 
     /**
      * Create new EnumGenerator instance.
-     *
-     * @throws ReflectionException
      */
     public function __construct(protected string $enum)
     {
@@ -39,6 +37,10 @@ class EnumGenerator
         $this->cache = Storage::createLocalDriver([
             'root' => storage_path('framework/cache/paragon'),
         ]);
+
+        if (! enum_exists($this->enum)) {
+            return;
+        }
 
         $this->reflector = new ReflectionEnum($this->enum);
     }
@@ -63,13 +65,13 @@ class EnumGenerator
     {
         $code = $this->prepareEnumCode();
 
-        return str(file_get_contents($this->stubPath()))
+        return str((string) file_get_contents($this->stubPath()))
             ->replace('{{ Path }}', $this->relativePath())
             ->replace('{{ Enum }}', class_basename($this->enum))
             ->replace('{{ Abstract }}', config('paragon.enums.abstract-class'))
-            ->replace('{{ TypeDefinition }}', $code->type)
-            ->replace('{{ Cases }}', $code->cases)
-            ->replace('{{ Getters }}', $code->getters);
+            ->replace('{{ TypeDefinition }}', (string) $code->get('type'))
+            ->replace('{{ Cases }}', (string) $code->get('cases'))
+            ->replace('{{ Getters }}', (string) $code->get('getters'));
     }
 
     /**
@@ -82,6 +84,8 @@ class EnumGenerator
 
     /**
      * Prepare all the data needed for each enum case object.
+     *
+     * @return Fluent<string, string>
      */
     protected function prepareEnumCode(): Fluent
     {
@@ -102,7 +106,7 @@ class EnumGenerator
         $depth = str($this->enum)->after('App\\Enums\\')->explode('\\')->count() - 1;
 
         return $depth
-            ? collect(range(1, $depth))->transform(fn () => '../')->join('')
+            ? collect(range(1, $depth))->map(fn () => '../')->join('')
             : './';
     }
 
@@ -124,6 +128,8 @@ class EnumGenerator
 
     /**
      * Determine the public methods available for the enum.
+     *
+     * @return Collection<int, ReflectionMethod>
      */
     protected function methods(): Collection
     {
@@ -139,16 +145,18 @@ class EnumGenerator
      */
     protected function valueReturnType(): string
     {
-        return $this->reflector->getBackingType()->getName() === 'int' ? 'number' : 'string';
+        return $this->reflector->getBackingType()?->getName() === 'int' ? 'number' : 'string';
     }
 
     /**
      * Build all the case objects.
+     *
+     * @param  Collection<int, ReflectionEnumUnitCase>  $cases
      */
     protected function buildCases(Collection $cases): string
     {
         return $cases
-            ->map(function ($case) {
+            ->map(function (ReflectionEnumUnitCase $case) {
                 $value = $this->caseValueProperty($case);
 
                 $methodValues = $this->methods()
@@ -162,7 +170,7 @@ class EnumGenerator
     /**
      * Prepare the value of the enum case object if it is a backed enum.
      */
-    protected function caseValueProperty($case): string
+    protected function caseValueProperty(ReflectionEnumUnitCase $case): string
     {
         if ($this->reflector->isBacked()) {
             return str('value: ')
@@ -181,7 +189,7 @@ class EnumGenerator
     /**
      * Prepare all the methods and their respective values so they can get injected into the case object.
      */
-    protected function caseMethods(ReflectionMethod $method, $case): string
+    protected function caseMethods(ReflectionMethod $method, ReflectionEnumUnitCase $case): string
     {
         $value = $case->getValue()->{$method->getName()}();
         $class = class_basename($method->getDeclaringClass()->getName());
@@ -198,8 +206,10 @@ class EnumGenerator
 
     /**
      * Assemble the actual enum case object code including the name, value if needed, and any public methods.
+     *
+     * @param  Collection<int, string>  $methodValues
      */
-    protected function assembleCaseObject($case, string $value, Collection $methodValues): string
+    protected function assembleCaseObject(ReflectionEnumUnitCase $case, string $value, Collection $methodValues): string
     {
         $name = str('name: ')->append("'{$case->name}'")->append(',');
 
@@ -212,6 +222,8 @@ class EnumGenerator
 
     /**
      * Build all case object getter methods.
+     *
+     * @param  Collection<int, ReflectionEnumUnitCase>  $cases
      */
     protected function buildGetters(Collection $cases): string
     {
@@ -223,7 +235,7 @@ class EnumGenerator
     /**
      * Assemble the static getter method code for the enum case object.
      */
-    protected function assembleCaseGetter($case): string
+    protected function assembleCaseGetter(ReflectionEnumUnitCase $case): string
     {
         $class = class_basename($case->getDeclaringClass()->name);
 
@@ -263,12 +275,12 @@ class EnumGenerator
 
     protected function cacheFilename(): string
     {
-        return md5($this->reflector->getFileName());
+        return md5((string) $this->reflector->getFileName());
     }
 
     protected function cachedFile(): string
     {
-        return md5_file($this->reflector->getFileName());
+        return (string) md5_file((string) $this->reflector->getFileName());
     }
 
     protected function cacheEnum(): void
