@@ -7,6 +7,9 @@ it('removes the cache directory', function () {
     // Assemble.
     $this->artisan(GenerateEnumsCommand::class);
 
+    // Pre-Assertions;
+    expect(storage_path('framework/cache/paragon'))->toBeDirectory();
+
     // Act.
     $this->artisan(ClearCacheCommand::class);
 

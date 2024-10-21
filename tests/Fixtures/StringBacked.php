@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 
-enum Status: string
+enum StringBacked: string
 {
     case Active = 'active';
     case Inactive = 'inactive';

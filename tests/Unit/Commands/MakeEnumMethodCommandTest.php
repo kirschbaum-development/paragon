@@ -7,8 +7,13 @@ it('generates enum methods', function () {
     // Act.
     $this->artisan(MakeEnumMethodCommand::class, ['name' => 'asOptions']);
 
+    $path = resource_path(config('paragon.enums.paths.methods') . DIRECTORY_SEPARATOR . 'asOptions.ts');
+    $file = file_get_contents($path);
+
     // Assert.
-    expect(resource_path(config('paragon.enums.paths.methods') . DIRECTORY_SEPARATOR . 'asOptions.ts'))->toBeFile();
+    expect($path)->toBeFile()
+        ->and($file)
+        ->toContain('export default function asOptions()');
 });
 
 it('imports the method into the base enum', function () {
@@ -20,5 +25,6 @@ it('imports the method into the base enum', function () {
 
     // Assert.
     expect($file)
-        ->toContain('asOptions');
+        ->toContain('import asOptions from')
+        ->toContain('Enum.asOptions = asOptions;');
 });

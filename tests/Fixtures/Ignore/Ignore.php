@@ -2,7 +2,7 @@
 
 namespace App\Enums\Ignore;
 
-enum Ignore: string
+enum Ignore
 {
-    case Ignore = 'ignore';
+    case Ignore;
 }
