@@ -15,14 +15,6 @@ use function Laravel\Prompts\text;
 class MakeEnumMethodCommand extends GeneratorCommand
 {
     /**
-     * Get the stub file for the generator.
-     */
-    protected function getStub(): string
-    {
-        return __DIR__ . '/../../stubs/method.stub';
-    }
-
-    /**
      * Execute the console command.
      *
      * @throws FileNotFoundException
@@ -37,6 +29,14 @@ class MakeEnumMethodCommand extends GeneratorCommand
             ->info("Abstract enum class has been rebuilt to include new [{$this->argument('name')}] method.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Get the stub file for the generator.
+     */
+    protected function getStub(): string
+    {
+        return __DIR__ . '/../../stubs/method.stub';
     }
 
     /**

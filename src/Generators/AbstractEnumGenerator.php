@@ -5,6 +5,7 @@ namespace Kirschbaum\Paragon\Generators;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Filesystem\Filesystem as FileUtility;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
 
@@ -41,7 +42,7 @@ class AbstractEnumGenerator
     /**
      * Get the path to the stubs.
      */
-    public function stubPath(): string
+    protected function stubPath(): string
     {
         return __DIR__ . '/../../stubs/abstract-enum.stub';
     }
@@ -61,19 +62,16 @@ class AbstractEnumGenerator
 
         return collect($files)
             ->mapWithKeys(function ($file) {
-                $abstractPath = collect(explode('/', config('paragon.enums.paths.generated')));
-                $relativeFilePath = str($file->getPath())
-                    ->after(resource_path())
-                    ->replace('\\', '/')
-                    ->ltrim('/')
-                    ->explode('/')
-                    ->map(fn ($directory, $index) => data_get($abstractPath, $index) === $directory ? '..' : $directory)
-                    ->filter()
-                    ->join('/');
+                $filesystem = new FileUtility();
+
+                $relativeFilePath = $filesystem->makePathRelative(
+                    $file->getPath(),
+                    resource_path(config('paragon.enums.paths.generated'))
+                );
 
                 $name = (string) str($file->getFileName())->before('.');
 
-                return [$name => "import {$name} from '{$relativeFilePath}/{$file->getFilename()}';" . PHP_EOL];
+                return [$name => "import {$name} from '{$relativeFilePath}{$file->getFilename()}';" . PHP_EOL];
             })
             ->sort();
     }

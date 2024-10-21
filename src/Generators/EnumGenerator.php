@@ -7,7 +7,7 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Fluent;
-use Kirschbaum\Paragon\Concerns\IgnoreWhenGeneratingTypescript;
+use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use ReflectionEnum;
 use ReflectionException;
 use ReflectionMethod;
@@ -75,7 +75,7 @@ class EnumGenerator
     /**
      * Get the path to the stubs.
      */
-    public function stubPath(): string
+    protected function stubPath(): string
     {
         return __DIR__ . '/../../stubs/enum.stub';
     }
@@ -129,7 +129,7 @@ class EnumGenerator
     {
         return collect($this->reflector->getMethods(ReflectionMethod::IS_PUBLIC))
             ->reject(function (ReflectionMethod $method) {
-                return $method->isStatic() || $method->getAttributes(IgnoreWhenGeneratingTypescript::class);
+                return $method->isStatic() || $method->getAttributes(IgnoreParagon::class);
             })
             ->sortBy(fn (ReflectionMethod $method) => $method->getName());
     }

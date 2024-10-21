@@ -3,10 +3,14 @@
 namespace Kirschbaum\Paragon\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Kirschbaum\Paragon\Concerns\DiscoverEnums;
+use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use Kirschbaum\Paragon\Generators\AbstractEnumGenerator;
 use Kirschbaum\Paragon\Generators\EnumGenerator;
+use ReflectionEnum;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'paragon:generate-enums', description: 'Generate Typescript versions of existing PHP enums')]
@@ -35,7 +39,17 @@ class GenerateEnumsCommand extends Command
      */
     protected function enums(): Collection
     {
-        return DiscoverEnums::within(config('paragon.enums.paths.php'))
+        return DiscoverEnums::within(app_path(config('paragon.enums.paths.php')))
+            ->reject(function ($enum) {
+                $reflector = new ReflectionEnum($enum);
+
+                $paths = Arr::map(Arr::wrap(config('paragon.enums.paths.ignore')), function ($path) {
+                    return Str::finish(app_path($path), '/');
+                });
+
+                return $reflector->getAttributes(IgnoreParagon::class)
+                    || Str::startsWith($reflector->getFileName(), $paths);
+            })
             ->values();
     }
 }
