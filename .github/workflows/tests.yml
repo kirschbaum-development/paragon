@@ -16,7 +16,6 @@ jobs:
                 laravel: [ 11.* ]
                 include:
                     -   laravel: 11.*
-                    -   laravel: 10.*
 
         name: Paragon Tests - PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
