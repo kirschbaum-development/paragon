@@ -70,9 +70,9 @@ class EnumGenerator
             ->replace('{{ Path }}', $this->relativePath())
             ->replace('{{ Enum }}', class_basename($this->enum))
             ->replace('{{ Abstract }}', config('paragon.enums.abstract-class'))
-            ->replace('{{ TypeDefinition }}', $code->get('type'))
-            ->replace('{{ Cases }}', $code->get('cases'))
-            ->replace('{{ Getters }}', $code->get('getters'));
+            ->replace('{{ TypeDefinition }}', (string) $code->get('type'))
+            ->replace('{{ Cases }}', (string) $code->get('cases'))
+            ->replace('{{ Getters }}', (string) $code->get('getters'));
     }
 
     /**
@@ -146,7 +146,7 @@ class EnumGenerator
      */
     protected function valueReturnType(): string
     {
-        return $this->reflector->getBackingType()->getName() === 'int' ? 'number' : 'string';
+        return $this->reflector->getBackingType()?->getName() === 'int' ? 'number' : 'string';
     }
 
     /**
