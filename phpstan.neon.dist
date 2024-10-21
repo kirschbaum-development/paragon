@@ -8,10 +8,10 @@ parameters:
         - src/
 
     # Level 9 is the highest level
-    level: 5
+    level: 6
 
-#    ignoreErrors:
-#        - '#PHPDoc tag @var#'
+    ignoreErrors:
+        - '#Access to an undefined property UnitEnum::\$value.#'
 #
 #    excludePaths:
 #        - ./*/*/FileToBeExcluded.php

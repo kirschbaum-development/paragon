@@ -36,6 +36,8 @@ class GenerateEnumsCommand extends Command
 
     /**
      * Gather all enum namespaces for searching.
+     *
+     * @return Collection<int, non-falsy-string>
      */
     protected function enums(): Collection
     {

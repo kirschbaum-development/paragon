@@ -13,6 +13,10 @@ class DiscoverEnums
 {
     /**
      * Get all the enums by searching the given directory.
+     *
+     * @param array<int, string>|string $path
+     *
+     * @return Collection<string, non-falsy-string>
      */
     public static function within(array|string $path): Collection
     {
@@ -21,8 +25,10 @@ class DiscoverEnums
 
     /**
      * Filter the files down to only enums.
+     *
+     * @return Collection<string, non-falsy-string>
      */
-    protected static function getEnums($files): Collection
+    protected static function getEnums(Finder $files): Collection
     {
         return collect($files)
             ->mapWithKeys(function ($file) {

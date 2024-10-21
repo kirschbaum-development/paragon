@@ -41,6 +41,8 @@ class MakeEnumMethodCommand extends GeneratorCommand
 
     /**
      * Get the console command arguments.
+     *
+     * @return array<int, array{string, int, string}>
      */
     protected function getArguments(): array
     {
@@ -51,6 +53,8 @@ class MakeEnumMethodCommand extends GeneratorCommand
 
     /**
      * Interact further with the user if they were prompted for missing arguments.
+     *
+     * @return array<string, callable>
      */
     protected function promptForMissingArgumentsUsing(): array
     {
