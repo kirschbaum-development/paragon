@@ -81,7 +81,7 @@ class AbstractEnumGenerator
     /**
      * Build out the actual enum case object including the name, value if needed, and any public methods.
      *
-     * @param Collection<int, string> $methods
+     * @param  Collection<int, string>  $methods
      */
     protected function methods(Collection $methods): string
     {

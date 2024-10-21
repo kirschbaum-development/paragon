@@ -14,7 +14,7 @@ class DiscoverEnums
     /**
      * Get all the enums by searching the given directory.
      *
-     * @param array<int, string>|string $path
+     * @param  array<int, string>|string  $path
      *
      * @return Collection<class-string, class-string>
      */

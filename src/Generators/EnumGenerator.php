@@ -10,7 +10,6 @@ use Illuminate\Support\Fluent;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use ReflectionEnum;
 use ReflectionEnumUnitCase;
-use ReflectionException;
 use ReflectionMethod;
 
 class EnumGenerator
@@ -152,7 +151,7 @@ class EnumGenerator
     /**
      * Build all the case objects.
      *
-     * @param Collection<int, ReflectionEnumUnitCase> $cases
+     * @param  Collection<int, ReflectionEnumUnitCase>  $cases
      */
     protected function buildCases(Collection $cases): string
     {
@@ -208,7 +207,7 @@ class EnumGenerator
     /**
      * Assemble the actual enum case object code including the name, value if needed, and any public methods.
      *
-     * @param Collection<int, string> $methodValues
+     * @param  Collection<int, string>  $methodValues
      */
     protected function assembleCaseObject(ReflectionEnumUnitCase $case, string $value, Collection $methodValues): string
     {
@@ -224,7 +223,7 @@ class EnumGenerator
     /**
      * Build all case object getter methods.
      *
-     * @param Collection<int, ReflectionEnumUnitCase> $cases
+     * @param  Collection<int, ReflectionEnumUnitCase>  $cases
      */
     protected function buildGetters(Collection $cases): string
     {
