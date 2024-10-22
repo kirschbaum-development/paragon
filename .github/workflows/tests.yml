@@ -14,8 +14,6 @@ jobs:
       matrix:
         php: [ 8.2, 8.3 ]
         laravel: [ 11.* ]
-        include:
-          - laravel: 11.*
 
     name: Paragon Tests - PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
@@ -43,4 +41,4 @@ jobs:
           composer dump
 
       - name: Execute tests
-        run: ./vendor/bin/pest
+        run: composer pest
