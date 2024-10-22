@@ -84,7 +84,7 @@ class GenerateEnumsCommand extends Command
         return [
             new InputOption(
                 name: 'javascript',
-                shortcut: ['j', 'js'],
+                shortcut: 'j',
                 mode: InputOption::VALUE_NONE,
                 description: 'Output Javascript files',
             ),
