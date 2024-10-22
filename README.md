@@ -32,7 +32,31 @@ php artisan paragon:generate-enums
 ```
 
 That's it. Now, wherever you may have had enums in your project, "paragons" or near perfect duplicates of those have
-been recreated inside of `resources/js/enums`. Here is an example of the output:
+been recreated inside of `resources/js/enums`. Here are some examples of the API:
+
+```php PHP API
+use App\Enums\Status;
+
+Status::Active;
+Status::Active->value;
+Status::cases();
+Status::from('active'); 
+Status::tryFrom('active'); 
+```
+
+```ts TypeScript API
+import Status from '@/js/enums/Status.ts';
+
+Status.Active;
+Status.Active.value;
+Status.cases();
+Status.from('active');
+Status.tryFrom('active'); 
+```
+
+As you can see the API is nearly the same, the only difference being how the two languages expect you to access objects!
+
+Let's take a closer look at a simple PHP enum and its generated Typescript code.
 
 ```php
 namespace App\Enums;
@@ -79,30 +103,6 @@ export default Status;
 At first glance it appears as though a lot more stuff is happening, but the above generated code allows us to interact
 with the enum in a nearly identical way as in PHP. And you may notice the generated TypeScript class extends the `Enum`
 class. This gives us some underlying functionality that is available to every enum.
-
-Using the above code as the example, here are the TypeScript equivalent method and property calls:
-
-```php PHP API
-use App\Enums\Status;
-
-Status::Active;
-Status::Active->value;
-Status::cases();
-Status::from('active'); 
-Status::tryFrom('active'); 
-```
-
-```ts TypeScript API
-import Status from '@/js/enums/Status.ts';
-
-Status.Active;
-Status.Active.value;
-Status.cases();
-Status.from('active');
-Status.tryFrom('active'); 
-```
-
-As you can see the API is nearly the same, the only difference being how the two languages expect you to access objects!
 
 ### Public Methods
 
