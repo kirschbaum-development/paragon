@@ -4,9 +4,9 @@ use Kirschbaum\Paragon\Commands\MakeEnumMethodCommand;
 
 it('generates enum methods', function () {
     // Act.
-    $this->artisan(MakeEnumMethodCommand::class, ['name' => 'asOptions']);
+    $this->artisan(MakeEnumMethodCommand::class, ['name' => 'asOptions', '--javascript' => true]);
 
-    $path = resource_path(config('paragon.enums.paths.methods') . DIRECTORY_SEPARATOR . 'asOptions.ts');
+    $path = resource_path(config('paragon.enums.paths.methods') . DIRECTORY_SEPARATOR . 'asOptions.js');
     $file = file_get_contents($path);
 
     // Assert.
@@ -17,9 +17,9 @@ it('generates enum methods', function () {
 
 it('imports the method into the base enum', function () {
     // Act.
-    $this->artisan(MakeEnumMethodCommand::class, ['name' => 'asOptions']);
+    $this->artisan(MakeEnumMethodCommand::class, ['name' => 'asOptions', '--javascript' => true]);
 
-    $file = file_get_contents(resource_path(config('paragon.enums.paths.generated') . DIRECTORY_SEPARATOR . 'Enum.ts'));
+    $file = file_get_contents(resource_path(config('paragon.enums.paths.generated') . DIRECTORY_SEPARATOR . 'Enum.js'));
 
     // Assert.
     expect($file)

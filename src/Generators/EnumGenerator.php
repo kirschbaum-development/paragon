@@ -7,20 +7,15 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Fluent;
+use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
 use ReflectionEnumUnitCase;
-use ReflectionException;
 use ReflectionMethod;
 
 class EnumGenerator
 {
-    /**
-     * Line prefix for ensuring proper file formatting.
-     */
-    protected string $linePrefix = PHP_EOL . '            ';
-
     protected Filesystem $cache;
 
     protected Filesystem $files;
@@ -31,12 +26,9 @@ class EnumGenerator
      * Create new EnumGenerator instance.
      *
      * @param  class-string<\UnitEnum>  $enum
-     *
-     * @throws ReflectionException
      */
-    public function __construct(
-        protected string $enum,
-    ) {
+    public function __construct(protected string $enum, protected EnumBuilder $builder)
+    {
         $this->files = Storage::createLocalDriver([
             'root' => resource_path(config()->string('paragon.enums.paths.generated')),
         ]);
@@ -72,21 +64,13 @@ class EnumGenerator
     {
         $code = $this->prepareEnumCode();
 
-        return str(file_get_contents($this->stubPath()) ?: null)
+        return str(file_get_contents($this->builder->stubPath()) ?: null)
             ->replace('{{ Path }}', $this->relativePath())
             ->replace('{{ Enum }}', class_basename($this->enum))
             ->replace('{{ Abstract }}', config()->string('paragon.enums.abstract-class'))
             ->replace('{{ TypeDefinition }}', $code->get('type') ?? '')
             ->replace('{{ Cases }}', $code->get('cases') ?? '')
             ->replace('{{ Getters }}', $code->get('getters') ?? '');
-    }
-
-    /**
-     * Get the path to the stubs.
-     */
-    protected function stubPath(): string
-    {
-        return __DIR__ . '/../../stubs/enum.stub';
     }
 
     /**
@@ -167,7 +151,7 @@ class EnumGenerator
                 $value = $this->caseValueProperty($case);
 
                 $methodValues = $this->methods()
-                    ->map(fn (ReflectionMethod $method): string => $this->caseMethods($method, $case));
+                    ->map(fn (ReflectionMethod $method): string => $this->builder->caseMethod($method, $case));
 
                 return $this->assembleCaseObject($case, $value, $methodValues);
             })
@@ -181,34 +165,20 @@ class EnumGenerator
     {
         if ($this->reflector->isBacked()) {
             return str('value: ')
-                ->prepend("{$this->linePrefix}")
+                ->prepend(PHP_EOL . '            ')
                 ->when(
                     $this->reflector->getBackingType()->getName() === 'int',
-                    fn ($string) => $case->getValue() instanceof BackedEnum ? $string->append("{$case->getValue()->value}") : $string,
-                    fn ($string) => $case->getValue() instanceof BackedEnum ? $string->append("'{$case->getValue()->value}'") : $string,
+                    fn ($string) => $case->getValue() instanceof BackedEnum
+                        ? $string->append("{$case->getValue()->value}")
+                        : $string,
+                    fn ($string) => $case->getValue() instanceof BackedEnum
+                        ? $string->append("'{$case->getValue()->value}'")
+                        : $string,
                 )
                 ->append(',');
         }
 
         return '';
-    }
-
-    /**
-     * Prepare all the methods and their respective values so they can get injected into the case object.
-     */
-    protected function caseMethods(ReflectionMethod $method, ReflectionEnumUnitCase|ReflectionEnumBackedCase $case): string
-    {
-        $value = $case->getValue()->{$method->getName()}();
-        $class = class_basename($method->getDeclaringClass()->getName());
-
-        return str("{$this->linePrefix}{$method->getName()}: (): ")
-            ->append(match (true) {
-                $value instanceof BackedEnum => "object => {$class}.{$value->name}",
-                is_numeric($value) => "number => {$value}",
-                is_null($value) => 'null => null',
-                default => "string => '{$value}'"
-            })
-            ->append(',');
     }
 
     /**
@@ -238,22 +208,8 @@ class EnumGenerator
     protected function buildGetters(Collection $cases): string
     {
         return $cases
-            ->map(fn ($case) => $this->assembleCaseGetter($case))
+            ->map(fn ($case) => $this->builder->assembleCaseGetter($case))
             ->join(PHP_EOL . PHP_EOL);
-    }
-
-    /**
-     * Assemble the static getter method code for the enum case object.
-     */
-    protected function assembleCaseGetter(ReflectionEnumUnitCase|ReflectionEnumBackedCase $case): string
-    {
-        $class = class_basename($case->getDeclaringClass()->name);
-
-        return <<<JS
-            public static get {$case->name}(): {$class}Definition {
-                return this.items['{$case->name}'];
-            }
-        JS;
     }
 
     /**
@@ -264,7 +220,7 @@ class EnumGenerator
         return str($this->enum)
             ->after('App\\Enums\\')
             ->replace('\\', '/')
-            ->append('.ts');
+            ->finish($this->builder->fileExtension());
     }
 
     protected function generatedFileExists(): bool

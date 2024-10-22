@@ -3,12 +3,15 @@
 namespace Kirschbaum\Paragon\Commands;
 
 use Exception;
-use Illuminate\Console\Command;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
+use Kirschbaum\Paragon\Concerns\Builders\EnumJsBuilder;
+use Kirschbaum\Paragon\Concerns\Builders\EnumTsBuilder;
 use Kirschbaum\Paragon\Generators\AbstractEnumGenerator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 use function Laravel\Prompts\text;
 
@@ -25,7 +28,7 @@ class MakeEnumMethodCommand extends GeneratorCommand
     {
         parent::handle();
 
-        app(AbstractEnumGenerator::class)();
+        app(AbstractEnumGenerator::class, ['builder' => $this->builder()])();
 
         $this->components->info("Abstract enum class has been rebuilt to include new [{$this->name()}] method.");
 
@@ -89,7 +92,9 @@ class MakeEnumMethodCommand extends GeneratorCommand
      */
     protected function getPath($name): string
     {
-        return resource_path(config()->string('paragon.enums.paths.methods')) . "/{$this->name()}.ts";
+        $extension = $this->option('javascript') ? 'js' : 'ts';
+
+        return resource_path(config()->string('paragon.enums.paths.methods')) . "/{$this->name()}.{$extension}";
     }
 
     /**
@@ -106,5 +111,30 @@ class MakeEnumMethodCommand extends GeneratorCommand
         }
 
         throw new Exception('[name] argument is not a string.');
+    }
+
+    protected function builder(): EnumBuilder
+    {
+        return $this->option('javascript')
+            ? app(EnumJsBuilder::class)
+            : app(EnumTsBuilder::class);
+
+    }
+
+    /**
+     * Get the console command options.
+     *
+     * @return array<int, InputOption>
+     */
+    protected function getOptions(): array
+    {
+        return [
+            new InputOption(
+                name: 'javascript',
+                shortcut: ['j', 'js'],
+                mode: InputOption::VALUE_NONE,
+                description: 'Output Javascript files',
+            ),
+        ];
     }
 }
