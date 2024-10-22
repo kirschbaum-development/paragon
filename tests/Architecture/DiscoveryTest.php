@@ -2,11 +2,11 @@
 
 use Kirschbaum\Paragon\Concerns\DiscoverEnums;
 
-arch()->expect(DiscoverEnums::class)
+arch('DiscoverEnums should extend nothing')->expect(DiscoverEnums::class)
     ->toExtendNothing();
 
-arch()->expect(DiscoverEnums::class)
+arch('DiscoverEnums should not have private methods')->expect(DiscoverEnums::class)
     ->not->toHavePrivateMethodsBesides(['within']);
 
-arch()->expect(DiscoverEnums::class)
+arch('DiscoverEnums should not have public methods')->expect(DiscoverEnums::class)
     ->not->toHavePublicMethodsBesides(['within']);

@@ -1,17 +1,17 @@
 <?php
 
-arch()->expect('Kirschbaum\Paragon\Generators')
+arch('Generators should have suffix')->expect('Kirschbaum\Paragon\Generators')
     ->classes()
     ->toHaveSuffix('Generator');
 
-arch()->expect('Kirschbaum\Paragon\Generators')
+arch('Generators should extend nothing')->expect('Kirschbaum\Paragon\Generators')
     ->toExtendNothing();
 
-arch()->expect('Kirschbaum\Paragon\Generators')
+arch('Generators should be invokable')->expect('Kirschbaum\Paragon\Generators')
     ->toBeInvokable();
 
-arch()->expect('Kirschbaum\Paragon\Generators')
+arch('Generators should not have private methods')->expect('Kirschbaum\Paragon\Generators')
     ->not->toHavePrivateMethodsBesides(['__construct', '__invoke']);
 
-arch()->expect('Kirschbaum\Paragon\Generators')
+arch('Generators should not have public methods')->expect('Kirschbaum\Paragon\Generators')
     ->not->toHavePublicMethodsBesides(['__construct', '__invoke']);
