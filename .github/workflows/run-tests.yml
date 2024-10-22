@@ -42,3 +42,61 @@ jobs:
 
       - name: Execute tests
         run: composer pest
+
+  pint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    name: Pint Style Check
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache/files
+          key: dependencies-composer-${{ hashFiles('composer.json') }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --no-suggest --dev
+          composer dump
+
+      - name: Execute Pint
+        run: composer pint-check
+
+  larastan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    name: Static Analysis
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache/files
+          key: dependencies-composer-${{ hashFiles('composer.json') }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: |
+          composer install --no-interaction --no-suggest --dev
+          composer dump
+
+      - name: Execute Larastan
+        run: composer larastan

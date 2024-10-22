@@ -3,10 +3,10 @@ includes:
 
 parameters:
     paths:
-        - config/
-        - src/
+        - config
+        - src
 
-    level: 8
+    level: max
 
-    ignoreErrors:
-        - '#Access to an undefined property UnitEnum::\$value.#'
+    checkMissingIterableValueType: true
+    treatPhpDocTypesAsCertain: false

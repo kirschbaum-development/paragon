@@ -3,7 +3,6 @@
 namespace Kirschbaum\Paragon\Concerns;
 
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionException;
 use SplFileInfo;
@@ -14,9 +13,9 @@ class DiscoverEnums
     /**
      * Get all the enums by searching the given directory.
      *
-     * @param  array<int, string>|string  $path
+     * @param  array<int,string>|string  $path
      *
-     * @return Collection<class-string, class-string>
+     * @return Collection<class-string<\UnitEnum>,class-string<\UnitEnum>>
      */
     public static function within(array|string $path): Collection
     {
@@ -26,12 +25,17 @@ class DiscoverEnums
     /**
      * Filter the files down to only enums.
      *
-     * @return Collection<class-string, class-string>
+     * @param  Finder<string,SplFileInfo>  $files
+     *
+     * @return Collection<class-string<\UnitEnum>,class-string<\UnitEnum>>
      */
     protected static function getEnums(Finder $files): Collection
     {
-        return collect($files)
-            ->mapWithKeys(function ($file) {
+        /** @var Collection<int, SplFileInfo> $fileCollection */
+        $fileCollection = collect($files);
+
+        return $fileCollection
+            ->mapWithKeys(function (SplFileInfo $file) {
                 try {
                     if (! class_exists($enum = static::classFromFile($file))) {
                         return [];
@@ -51,15 +55,21 @@ class DiscoverEnums
 
     /**
      * Extract the class name from the given file path.
+     *
+     * @return class-string<\UnitEnum>
      */
     protected static function classFromFile(SplFileInfo $file): string
     {
-        $class = trim(Str::replaceFirst(base_path(), '', $file->getRealPath()), DIRECTORY_SEPARATOR);
-
-        return str_replace(
-            [DIRECTORY_SEPARATOR, ucfirst(basename(app()->path())) . '\\'],
-            ['\\', app()->getNamespace()],
-            ucfirst(Str::replaceLast('.php', '', $class))
-        );
+        /** @var class-string<\UnitEnum> */
+        return str($file->getRealPath())
+            ->replaceFirst(base_path(), '')
+            ->trim(DIRECTORY_SEPARATOR)
+            ->replaceLast('.php', '')
+            ->ucfirst()
+            ->replace(
+                search: [DIRECTORY_SEPARATOR, ucfirst(basename(app()->path())) . '\\'],
+                replace: ['\\', app()->getNamespace()]
+            )
+            ->toString();
     }
 }

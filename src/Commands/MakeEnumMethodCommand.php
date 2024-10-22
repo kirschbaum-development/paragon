@@ -70,6 +70,8 @@ class MakeEnumMethodCommand extends GeneratorCommand
     /**
      * Build the file with the given name.
      *
+     * @param  string  $name
+     *
      * @throws Exception
      * @throws FileNotFoundException
      */
@@ -87,7 +89,7 @@ class MakeEnumMethodCommand extends GeneratorCommand
      */
     protected function getPath($name): string
     {
-        return resource_path(config('paragon.enums.paths.methods')) . "/{$this->name()}.ts";
+        return resource_path(config()->string('paragon.enums.paths.methods')) . "/{$this->name()}.ts";
     }
 
     /**
