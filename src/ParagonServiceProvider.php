@@ -5,6 +5,7 @@ namespace Kirschbaum\Paragon;
 use Illuminate\Support\ServiceProvider;
 use Kirschbaum\Paragon\Commands\ClearCacheCommand;
 use Kirschbaum\Paragon\Commands\GenerateEnumsCommand;
+use Kirschbaum\Paragon\Commands\GenerateEventsCommand;
 use Kirschbaum\Paragon\Commands\MakeEnumMethodCommand;
 
 class ParagonServiceProvider extends ServiceProvider
@@ -32,6 +33,7 @@ class ParagonServiceProvider extends ServiceProvider
             $this->commands([
                 ClearCacheCommand::class,
                 GenerateEnumsCommand::class,
+                GenerateEventsCommand::class,
                 MakeEnumMethodCommand::class,
             ]);
         }

@@ -11,6 +11,7 @@ use UnitEnum;
 
 class DiscoverEnums
 {
+    use CanGetClassFromFile;
     /**
      * Get all the enums by searching the given directory.
      *
