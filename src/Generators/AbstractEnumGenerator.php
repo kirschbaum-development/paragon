@@ -5,6 +5,7 @@ namespace Kirschbaum\Paragon\Generators;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
 use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem as FileUtility;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
@@ -14,7 +15,7 @@ class AbstractEnumGenerator
 {
     protected Filesystem $files;
 
-    public function __construct()
+    public function __construct(protected EnumBuilder $builder)
     {
         $this->files = Storage::createLocalDriver([
             'root' => resource_path(config()->string('paragon.enums.paths.generated')),
@@ -34,18 +35,10 @@ class AbstractEnumGenerator
         $imports = $this->imports();
         $suffix = $imports->count() ? PHP_EOL : '';
 
-        return str((string) file_get_contents($this->stubPath()))
+        return str((string) file_get_contents($this->builder->abstractStubPath()))
             ->replace('{{ Abstract }}', config()->string('paragon.enums.abstract-class'))
             ->replace('{{ Imports }}', "{$imports->join('')}{$suffix}")
             ->replace('{{ Methods }}', "{$this->methods($imports->keys())}{$suffix}");
-    }
-
-    /**
-     * Get the path to the stubs.
-     */
-    protected function stubPath(): string
-    {
-        return __DIR__ . '/../../stubs/abstract-enum.stub';
     }
 
     /**
@@ -100,6 +93,6 @@ class AbstractEnumGenerator
      */
     protected function path(): string
     {
-        return config('paragon.enums.abstract-class') . '.ts';
+        return config('paragon.enums.abstract-class') . $this->builder->fileExtension();
     }
 }

@@ -1,0 +1,32 @@
+{{ Imports }}export class ValueError extends Error {
+    constructor(className, value) {
+        super(`${value} is not a valid backing value for enum ${className}`);
+    }
+}
+
+class {{ Abstract }} {
+    static cases() {
+        return Object.entries(this.items).map(([name, item]) => ({
+            name,
+            value: item.value,
+        }));
+    }
+
+    static from(value) {
+        const enumCase = this.cases().find(item => item.value === value);
+
+        if (enumCase === undefined) {
+            throw new ValueError(this.name, value);
+        }
+
+        return this[enumCase.name];
+    }
+
+    static tryFrom(value) {
+        const enumCase = this.cases().find(item => item.value === value);
+
+        return enumCase ? this[enumCase.name] : null;
+    }
+}
+{{ Methods }}
+export default {{ Abstract }};
