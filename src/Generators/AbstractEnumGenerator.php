@@ -56,7 +56,9 @@ class AbstractEnumGenerator
             return collect();
         }
 
-        /** @var Collection<int, SplFileInfo> $fileCollection */
+        /**
+         * @var Collection<int, SplFileInfo> $fileCollection
+         */
         $fileCollection = collect($files);
 
         return $fileCollection

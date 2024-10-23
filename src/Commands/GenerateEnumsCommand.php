@@ -10,12 +10,14 @@ use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
 use Kirschbaum\Paragon\Concerns\Builders\EnumJsBuilder;
 use Kirschbaum\Paragon\Concerns\Builders\EnumTsBuilder;
 use Kirschbaum\Paragon\Concerns\DiscoverEnums;
+use Kirschbaum\Paragon\Concerns\GenerateAs;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use Kirschbaum\Paragon\Generators\AbstractEnumGenerator;
 use Kirschbaum\Paragon\Generators\EnumGenerator;
 use ReflectionEnum;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
+use UnitEnum;
 
 #[AsCommand(name: 'paragon:generate-enums', description: 'Generate Typescript versions of existing PHP enums')]
 class GenerateEnumsCommand extends Command
@@ -28,7 +30,7 @@ class GenerateEnumsCommand extends Command
         $builder = $this->builder();
 
         $generatedEnums = $this->enums()
-            ->map(fn ($enum) => app(EnumGenerator::class, ['enum' => $enum, 'builder' => $builder])())
+            ->map(fn (string $enum) => app(EnumGenerator::class, ['enum' => $enum, 'builder' => $builder])())
             ->filter();
 
         $this->components->info("{$generatedEnums->count()} enums have been (re)generated.");
@@ -43,12 +45,12 @@ class GenerateEnumsCommand extends Command
     /**
      * Gather all enum namespaces for searching.
      *
-     * @return Collection<int,class-string<\UnitEnum>>
+     * @return Collection<int,class-string<UnitEnum>>
      */
     protected function enums(): Collection
     {
         return DiscoverEnums::within(app_path(config()->string('paragon.enums.paths.php')))
-            ->reject(function ($enum) {
+            ->reject(function (string $enum) {
                 if (! enum_exists($enum)) {
                     return true;
                 }
@@ -68,10 +70,13 @@ class GenerateEnumsCommand extends Command
 
     protected function builder(): EnumBuilder
     {
-        return $this->option('javascript')
-            ? app(EnumJsBuilder::class)
-            : app(EnumTsBuilder::class);
+        $builder = match (true) {
+            $this->option('javascript') => EnumJsBuilder::class,
+            $this->option('typescript') => EnumTsBuilder::class,
+            default => GenerateAs::from(config()->string('paragon.generate-as'))->builder()
+        };
 
+        return app($builder);
     }
 
     /**
@@ -87,6 +92,12 @@ class GenerateEnumsCommand extends Command
                 shortcut: 'j',
                 mode: InputOption::VALUE_NONE,
                 description: 'Output Javascript files',
+            ),
+            new InputOption(
+                name: 'typescript',
+                shortcut: 't',
+                mode: InputOption::VALUE_NONE,
+                description: 'Output TypeScript files',
             ),
         ];
     }

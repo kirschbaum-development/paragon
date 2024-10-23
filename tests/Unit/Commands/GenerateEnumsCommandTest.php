@@ -144,3 +144,82 @@ it('ignores enums within ignored paths', function () {
     expect(resource_path(config('paragon.enums.paths.generated') . '/Ignore/Ignore.ts'))
         ->not->toBeFile();
 });
+
+describe('command flags and config settings for typescript', function () {
+    it('builds typescript by default', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.ts'))->toBeFile();
+    });
+
+    it('builds javascript via flag', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class, ['--javascript' => true]);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.js'))->toBeFile();
+    });
+
+    it('builds typescript via flag', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class, ['--typescript' => true]);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.ts'))->toBeFile();
+    });
+});
+
+describe('command flags and config settings for javascript', function () {
+    beforeEach(fn () => $this->app['config']->set('paragon.generate-as', 'javascript'));
+
+    it('builds javascript by default', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.js'))->toBeFile();
+    });
+
+    it('builds typescript via flag', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class, ['--typescript' => true]);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.ts'))->toBeFile();
+    });
+
+    it('builds javascript via flag', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class, ['--javascript' => true]);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.js'))->toBeFile();
+    });
+});
+
+describe('command flags and config settings exceptions', function () {
+    beforeEach(fn () => $this->app['config']->set('paragon.generate-as', 'exception'));
+
+    it('throws exception with bad default', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class);
+    })->throws(ValueError::class, '"exception" is not a valid backing value for enum Kirschbaum\Paragon\Concerns\GenerateAs');
+
+    it('builds javascript via flag', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class, ['--javascript' => true]);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.js'))->toBeFile();
+    });
+
+    it('builds typescript via flag', function () {
+        // Act.
+        $this->artisan(GenerateEnumsCommand::class, ['--typescript' => true]);
+
+        // Assert.
+        expect(resource_path(config('paragon.enums.paths.generated') . '/StringBacked.ts'))->toBeFile();
+    });
+});

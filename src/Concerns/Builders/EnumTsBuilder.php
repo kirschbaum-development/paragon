@@ -3,6 +3,7 @@
 namespace Kirschbaum\Paragon\Concerns\Builders;
 
 use BackedEnum;
+use ReflectionEnumBackedCase;
 use ReflectionEnumUnitCase;
 use ReflectionMethod;
 
@@ -35,7 +36,7 @@ class EnumTsBuilder implements EnumBuilder
     /**
      * Prepare the method and its respective values so it can get injected into the case object.
      */
-    public function caseMethod(ReflectionMethod $method, ReflectionEnumUnitCase $case): string
+    public function caseMethod(ReflectionMethod $method, ReflectionEnumUnitCase|ReflectionEnumBackedCase $case): string
     {
         $value = $case->getValue()->{$method->getName()}();
         $class = class_basename($method->getDeclaringClass()->getName());
@@ -53,7 +54,7 @@ class EnumTsBuilder implements EnumBuilder
     /**
      * Assemble the static getter method code for the enum case object.
      */
-    public function assembleCaseGetter(ReflectionEnumUnitCase $case): string
+    public function assembleCaseGetter(ReflectionEnumUnitCase|ReflectionEnumBackedCase $case): string
     {
         $class = class_basename($case->getDeclaringClass()->name);
 
