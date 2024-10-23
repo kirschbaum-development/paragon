@@ -3,6 +3,12 @@
 use Kirschbaum\Paragon\Commands\ClearCacheCommand;
 use Kirschbaum\Paragon\Commands\GenerateEnumsCommand;
 
+exec('composer show pestphp/pest', $output);
+
+if ($output[3] !== 'versions : * v3') {
+    return;
+}
+
 it('removes the cache directory', function () {
     // Assemble.
     $this->artisan(GenerateEnumsCommand::class);

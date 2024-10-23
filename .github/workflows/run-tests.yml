@@ -2,7 +2,6 @@ name: run-tests
 
 on:
   push:
-  pull_request:
 
 jobs:
   pest:
@@ -12,8 +11,32 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [ 8.2, 8.3 ]
-        laravel: [ 11.* ]
+        php: [ 8.1, 8.2, 8.3 ]
+        laravel: [ 10.*, 11.* ]
+        include:
+          - php: 8.1
+            laravel: 10.*
+            pest: 2.*
+            testbench: 8.*
+          - php: 8.2
+            laravel: 10.*
+            pest: 2.*
+            testbench: 8.*
+          - php: 8.3
+            laravel: 10.*
+            pest: 2.*
+            testbench: 8.*
+          - php: 8.2
+            laravel: 11.*
+            pest: 3.*
+            testbench: 9.*
+          - php: 8.3
+            laravel: 11.*
+            pest: 3.*
+            testbench: 9.*
+        exclude:
+          - php: 8.1
+            laravel: 11.*
 
     name: Paragon Tests - PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
@@ -37,7 +60,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install --no-interaction --no-suggest --dev
+          composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+          composer require "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
+          composer require "pestphp/pest:${{ matrix.pest }}" "pestphp/pest-plugin-laravel:${{ matrix.pest }}" --no-interaction --no-update --dev
+          composer update --prefer-dist --no-interaction --no-suggest --dev
           composer dump
 
       - name: Execute tests
