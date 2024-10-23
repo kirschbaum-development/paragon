@@ -10,6 +10,7 @@ use Symfony\Component\Finder\Finder;
 
 class DiscoverEnums
 {
+    use CanGetClassFromFile;
     /**
      * Get all the enums by searching the given directory.
      *
@@ -51,25 +52,5 @@ class DiscoverEnums
                     : [];
             })
             ->filter();
-    }
-
-    /**
-     * Extract the class name from the given file path.
-     *
-     * @return class-string<\UnitEnum>
-     */
-    protected static function classFromFile(SplFileInfo $file): string
-    {
-        /** @var class-string<\UnitEnum> */
-        return str($file->getRealPath())
-            ->replaceFirst(base_path(), '')
-            ->trim(DIRECTORY_SEPARATOR)
-            ->replaceLast('.php', '')
-            ->ucfirst()
-            ->replace(
-                search: [DIRECTORY_SEPARATOR, ucfirst(basename(app()->path())) . '\\'],
-                replace: ['\\', app()->getNamespace()]
-            )
-            ->toString();
     }
 }

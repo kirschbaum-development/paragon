@@ -2,6 +2,7 @@
 
 namespace Kirschbaum\Paragon\Commands;
 
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -25,11 +26,17 @@ class GenerateEnumsCommand extends Command
      */
     public function handle(): int
     {
-        $builder = $this->builder();
+        try {
+            $builder = $this->builder();
 
-        $generatedEnums = $this->enums()
-            ->map(fn ($enum) => app(EnumGenerator::class, ['enum' => $enum, 'builder' => $builder])())
-            ->filter();
+            $generatedEnums = $this->enums()
+                ->map(fn ($enum) => app(EnumGenerator::class, ['enum' => $enum, 'builder' => $builder])())
+                ->filter();
+        } catch (Exception $e) {
+            $this->components->error($e->getMessage());
+
+            return self::FAILURE;
+        }
 
         $this->components->info("{$generatedEnums->count()} enums have been (re)generated.");
 
