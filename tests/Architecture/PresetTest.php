@@ -1,6 +1,11 @@
 <?php
 
-arch('PHP preset')->preset()->php();
+// Pest Presets are available beginning in version 3.
+exec('composer show pestphp/pest', $output);
+
+if ($output[3] === 'versions : * v3') {
+    arch('PHP preset')->preset()->php();
+}
 
 // Security without the md5 method as we need it for caching.
 arch('Not to use vulnerable functions')
