@@ -91,7 +91,7 @@ class EnumGenerator
     {
         $cases = collect($this->reflector->getCases());
 
-        return fluent([
+        return new Fluent([
             'type' => $this->buildTypeDefinition(),
             'cases' => $this->buildCases($cases),
             'getters' => $this->buildGetters($cases),
