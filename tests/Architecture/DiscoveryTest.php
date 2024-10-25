@@ -2,11 +2,15 @@
 
 use Kirschbaum\Paragon\Concerns\DiscoverEnums;
 
-arch()->expect(DiscoverEnums::class)
+arch('DiscoverEnums should extend nothing')->expect(DiscoverEnums::class)
     ->toExtendNothing();
 
-arch()->expect(DiscoverEnums::class)
-    ->not->toHavePrivateMethodsBesides(['within']);
+exec('composer show pestphp/pest', $output);
 
-arch()->expect(DiscoverEnums::class)
-    ->not->toHavePublicMethodsBesides(['within']);
+if ($output[3] === 'versions : * v3') {
+    arch('DiscoverEnums should not have private methods')->expect(DiscoverEnums::class)
+        ->not->toHavePrivateMethodsBesides(['within']);
+
+    arch('DiscoverEnums should not have public methods')->expect(DiscoverEnums::class)
+        ->not->toHavePublicMethodsBesides(['within']);
+}
