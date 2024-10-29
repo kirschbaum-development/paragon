@@ -17,7 +17,7 @@ class EventGenerator
     /**
      * Create new EventGenerator instance.
      */
-    public function __construct(protected Collection $events)
+    public function __construct(protected Collection $events, protected bool $generateJavascript = false)
     {
         $this->files = Storage::createLocalDriver([
             'root' => resource_path(config('paragon.events.paths.generated')),
@@ -36,12 +36,25 @@ class EventGenerator
      */
     protected function contents(): string
     {
-        $content = $this->events
+        $object = $this->events
             ->mapWithKeys(fn ($value, $key) => [str($value)->replace('\\', '.')->toString() => $value])
-            ->undot();
+            ->undot()
+            ->toJson(JSON_PRETTY_PRINT);
+
+        $interface = $this->events
+            ->map(function ($path) {
+                $parts = explode('\\', $path);
+                array_pop($parts);
+
+                return implode('\\', $parts);
+            })
+            ->mapWithKeys(fn ($value, $key) => [str($value)->replace('\\', '.')->toString() => ['[key:string]' => 'string | { [subKey: string]: string }']])
+            ->undot()
+            ->toJson(JSON_PRETTY_PRINT);
 
         return str(file_get_contents($this->stubPath()))
-            ->replace('{{ Events }}', json_encode($content, JSON_PRETTY_PRINT));
+            ->replace('{{ Interface }}', str($interface)->replace('"', ''))
+            ->replace('{{ Events }}', $object);
     }
 
     /**
@@ -49,7 +62,9 @@ class EventGenerator
      */
     public function stubPath(): string
     {
-        return __DIR__ . '/../../stubs/event.stub';
+        return $this->generateJavascript
+            ? __DIR__ . '/../../stubs/event-js.stub'
+            : __DIR__ . '/../../stubs/event-ts.stub';
     }
 
     /**
@@ -57,6 +72,8 @@ class EventGenerator
      */
     protected function path(): string
     {
-        return str('Events.ts');
+        return $this->generateJavascript
+            ? str('Events.js')
+            : str('Events.ts');
     }
 }

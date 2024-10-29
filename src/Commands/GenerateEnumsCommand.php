@@ -17,11 +17,12 @@ use Kirschbaum\Paragon\Generators\AbstractEnumGenerator;
 use Kirschbaum\Paragon\Generators\EnumGenerator;
 use ReflectionEnum;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputOption;
 
 #[AsCommand(name: 'paragon:enum:generate', description: 'Generate Typescript versions of existing PHP enums')]
 class GenerateEnumsCommand extends Command
 {
+    use HasCommandLineOptions;
+
     /**
      * Execute the console command.
      */
