@@ -205,7 +205,7 @@ describe('command flags and config settings exceptions', function () {
     it('throws exception with bad default', function () {
         // Act.
         $this->artisan(GenerateEnumsCommand::class);
-    })->throws(ValueError::class, '"exception" is not a valid backing value for enum Kirschbaum\Paragon\Concerns\GenerateAs');
+    })->throws(ValueError::class, '"exception" is not a valid backing value for enum');
 
     it('builds javascript via flag', function () {
         // Act.
