@@ -11,6 +11,7 @@
 | Laravel Version | Paragon Version |
 |:----------------|:----------------|
 | 11.0            | 1.0.x           |
+| 10.0            | 1.0.x           |
 
 ## Installation
 
