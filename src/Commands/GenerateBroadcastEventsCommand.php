@@ -5,12 +5,15 @@ namespace Kirschbaum\Paragon\Commands;
 use Exception;
 use Illuminate\Console\Command;
 use Kirschbaum\Paragon\Concerns\DiscoverBroadcastEvents;
+use Kirschbaum\Paragon\Concerns\HasCommandLineOptions;
 use Kirschbaum\Paragon\Generators\EventGenerator;
 use Symfony\Component\Console\Attribute\AsCommand;
 
-#[AsCommand(name: 'paragon:generate-events', description: 'Generate Javascript versions of existing Laravel Events')]
-class GenerateEventsCommand extends Command
+#[AsCommand(name: 'paragon:generate-broadcast-events', description: 'Generate Typescript/Javascript definitions for Laravel Broadcast Events')]
+class GenerateBroadcastEventsCommand extends Command
 {
+    use HasCommandLineOptions;
+
     /**
      * Execute the console command.
      */
@@ -19,7 +22,7 @@ class GenerateEventsCommand extends Command
         try {
             $events = DiscoverBroadcastEvents::within(app_path(config()->string('paragon.events.paths.php')));
 
-            app(EventGenerator::class, ['events' => $events])();
+            app(EventGenerator::class, ['events' => $events, 'generateJavascript' => $this->option('javascript')])();
         } catch (Exception $e) {
             $this->components->error($e->getMessage());
 

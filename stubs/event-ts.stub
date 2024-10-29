@@ -1,0 +1,5 @@
+interface AppEvents {{ Interface }}
+
+const events: AppEvents = {{ Events }};
+
+export default events;

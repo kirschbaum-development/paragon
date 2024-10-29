@@ -11,16 +11,18 @@ use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
 use Kirschbaum\Paragon\Concerns\Builders\EnumJsBuilder;
 use Kirschbaum\Paragon\Concerns\Builders\EnumTsBuilder;
 use Kirschbaum\Paragon\Concerns\DiscoverEnums;
+use Kirschbaum\Paragon\Concerns\HasCommandLineOptions;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use Kirschbaum\Paragon\Generators\AbstractEnumGenerator;
 use Kirschbaum\Paragon\Generators\EnumGenerator;
 use ReflectionEnum;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputOption;
 
-#[AsCommand(name: 'paragon:generate-enums', description: 'Generate Typescript versions of existing PHP enums')]
+#[AsCommand(name: 'paragon:generate-enums', description: 'Generate Typescript/Javascript versions of existing PHP enums')]
 class GenerateEnumsCommand extends Command
 {
+    use HasCommandLineOptions;
+
     /**
      * Execute the console command.
      */
@@ -78,23 +80,5 @@ class GenerateEnumsCommand extends Command
         return $this->option('javascript')
             ? app(EnumJsBuilder::class)
             : app(EnumTsBuilder::class);
-
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array<int, InputOption>
-     */
-    protected function getOptions(): array
-    {
-        return [
-            new InputOption(
-                name: 'javascript',
-                shortcut: 'j',
-                mode: InputOption::VALUE_NONE,
-                description: 'Output Javascript files',
-            ),
-        ];
     }
 }
