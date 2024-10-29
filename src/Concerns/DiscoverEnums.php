@@ -7,15 +7,16 @@ use ReflectionClass;
 use ReflectionException;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
+use UnitEnum;
 
 class DiscoverEnums
 {
     /**
      * Get all the enums by searching the given directory.
      *
-     * @param  array<int,string>|string  $path
+     * @param  array<int, string>|string  $path
      *
-     * @return Collection<class-string<\UnitEnum>,class-string<\UnitEnum>>
+     * @return Collection<class-string<UnitEnum>, class-string<UnitEnum>>
      */
     public static function within(array|string $path): Collection
     {
@@ -25,13 +26,15 @@ class DiscoverEnums
     /**
      * Filter the files down to only enums.
      *
-     * @param  Finder<string,SplFileInfo>  $files
+     * @param  Finder<string, SplFileInfo>  $files
      *
-     * @return Collection<class-string<\UnitEnum>,class-string<\UnitEnum>>
+     * @return Collection<class-string<UnitEnum>, class-string<UnitEnum>>
      */
     protected static function getEnums(Finder $files): Collection
     {
-        /** @var Collection<int, SplFileInfo> $fileCollection */
+        /**
+         * @var Collection<int, SplFileInfo> $fileCollection
+         */
         $fileCollection = collect($files);
 
         return $fileCollection
@@ -56,11 +59,13 @@ class DiscoverEnums
     /**
      * Extract the class name from the given file path.
      *
-     * @return class-string<\UnitEnum>
+     * @return class-string<UnitEnum>
      */
     protected static function classFromFile(SplFileInfo $file): string
     {
-        /** @var class-string<\UnitEnum> */
+        /**
+         * @var class-string<UnitEnum>
+         */
         return str($file->getRealPath())
             ->replaceFirst(base_path(), '')
             ->trim(DIRECTORY_SEPARATOR)

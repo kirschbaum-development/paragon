@@ -7,12 +7,14 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Fluent;
+use Illuminate\Support\Stringable;
 use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
 use ReflectionEnumUnitCase;
 use ReflectionMethod;
+use UnitEnum;
 
 class EnumGenerator
 {
@@ -25,7 +27,7 @@ class EnumGenerator
     /**
      * Create new EnumGenerator instance.
      *
-     * @param  class-string<\UnitEnum>  $enum
+     * @param  class-string<UnitEnum>  $enum
      */
     public function __construct(protected string $enum, protected EnumBuilder $builder)
     {
@@ -112,11 +114,11 @@ class EnumGenerator
     protected function buildTypeDefinition(): string
     {
         return $this->methods()
-            ->map(fn ($method) => PHP_EOL . "    {$method->getName()}();")
+            ->map(fn (ReflectionMethod $method) => PHP_EOL . "    {$method->getName()}();")
             ->sortDesc()
             ->when(
                 $this->reflector->isBacked(),
-                fn ($collection) => $collection->push(PHP_EOL . "    value: {$this->valueReturnType()};")
+                fn (Collection $collection) => $collection->push(PHP_EOL . "    value: {$this->valueReturnType()};")
             )
             ->reverse()
             ->join('');
@@ -147,12 +149,12 @@ class EnumGenerator
     /**
      * Build all the case objects.
      *
-     * @param  Collection<int,ReflectionEnumUnitCase|ReflectionEnumBackedCase>  $cases
+     * @param  Collection<int, ReflectionEnumUnitCase|ReflectionEnumBackedCase>  $cases
      */
     protected function buildCases(Collection $cases): string
     {
         return $cases
-            ->map(function (ReflectionEnumUnitCase $case) {
+            ->map(function (ReflectionEnumUnitCase|ReflectionEnumBackedCase $case) {
                 $value = $this->caseValueProperty($case);
 
                 $methodValues = $this->methods()
@@ -173,10 +175,10 @@ class EnumGenerator
                 ->prepend(PHP_EOL . '            ')
                 ->when(
                     $this->reflector->getBackingType()->getName() === 'int',
-                    fn ($string) => $case->getValue() instanceof BackedEnum
+                    fn (Stringable $string) => $case->getValue() instanceof BackedEnum
                         ? $string->append("{$case->getValue()->value}")
                         : $string,
-                    fn ($string) => $case->getValue() instanceof BackedEnum
+                    fn (Stringable $string) => $case->getValue() instanceof BackedEnum
                         ? $string->append("'{$case->getValue()->value}'")
                         : $string,
                 )
@@ -189,7 +191,7 @@ class EnumGenerator
     /**
      * Assemble the actual enum case object code including the name, value if needed, and any public methods.
      *
-     * @param  Collection<int,string>  $methodValues
+     * @param  Collection<int, string>  $methodValues
      */
     protected function assembleCaseObject(
         ReflectionEnumUnitCase|ReflectionEnumBackedCase $case,
@@ -208,12 +210,12 @@ class EnumGenerator
     /**
      * Build all case object getter methods.
      *
-     * @param  Collection<int,ReflectionEnumUnitCase|ReflectionEnumBackedCase>  $cases
+     * @param  Collection<int, ReflectionEnumUnitCase|ReflectionEnumBackedCase>  $cases
      */
     protected function buildGetters(Collection $cases): string
     {
         return $cases
-            ->map(fn ($case) => $this->builder->assembleCaseGetter($case))
+            ->map(fn (ReflectionEnumUnitCase|ReflectionEnumBackedCase $case) => $this->builder->assembleCaseGetter($case))
             ->join(PHP_EOL . PHP_EOL);
     }
 
