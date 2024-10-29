@@ -17,8 +17,11 @@ class AbstractEnumGenerator
 
     public function __construct(protected EnumBuilder $builder)
     {
+        /** @var string */
+        $generatedPath = config('paragon.enums.paths.generated');
+
         $this->files = Storage::createLocalDriver([
-            'root' => resource_path(config()->string('paragon.enums.paths.generated')),
+            'root' => resource_path($generatedPath),
         ]);
     }
 
@@ -34,9 +37,11 @@ class AbstractEnumGenerator
     {
         $imports = $this->imports();
         $suffix = $imports->count() ? PHP_EOL : '';
+        /** @var string */
+        $abstractClass = config('paragon.enums.abstract-class');
 
         return str((string) file_get_contents($this->builder->abstractStubPath()))
-            ->replace('{{ Abstract }}', config()->string('paragon.enums.abstract-class'))
+            ->replace('{{ Abstract }}', $abstractClass)
             ->replace('{{ Imports }}', "{$imports->join('')}{$suffix}")
             ->replace('{{ Methods }}', "{$this->methods($imports->keys())}{$suffix}");
     }
@@ -48,10 +53,13 @@ class AbstractEnumGenerator
      */
     protected function imports(): Collection
     {
+        /** @var string */
+        $methodsPath = config('paragon.enums.paths.methods');
+
         try {
             $files = Finder::create()
                 ->files()
-                ->in(resource_path(config()->string('paragon.enums.paths.methods')));
+                ->in(resource_path($methodsPath));
         } catch (DirectoryNotFoundException) {
             return collect();
         }
@@ -64,10 +72,12 @@ class AbstractEnumGenerator
         return $fileCollection
             ->mapWithKeys(function (SplFileInfo $file): array {
                 $filesystem = new FileUtility();
+                /** @var string */
+                $generatedPath = config('paragon.enums.paths.generated');
 
                 $relativeFilePath = $filesystem->makePathRelative(
                     $file->getPath(),
-                    resource_path(config()->string('paragon.enums.paths.generated'))
+                    resource_path($generatedPath)
                 );
 
                 $name = (string) str($file->getFileName())->before('.');
