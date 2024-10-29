@@ -74,8 +74,8 @@ class GenerateEnumsCommand extends Command
     protected function builder(): EnumBuilder
     {
         /** @var string */
-        $generateAs = config('paragon.generate-as');        
-        
+        $generateAs = config('paragon.generate-as');
+
         $builder = match (true) {
             $this->option('javascript') => EnumJsBuilder::class,
             $this->option('typescript') => EnumTsBuilder::class,
