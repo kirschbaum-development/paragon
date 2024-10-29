@@ -92,9 +92,11 @@ class MakeEnumMethodCommand extends GeneratorCommand
      */
     protected function getPath($name): string
     {
+        /** @var string */
+        $methods = config('paragon.enums.paths.methods');
         $extension = $this->option('javascript') ? 'js' : 'ts';
 
-        return resource_path(config()->string('paragon.enums.paths.methods')) . "/{$this->name()}.{$extension}";
+        return resource_path($methods) . "/{$this->name()}.{$extension}";
     }
 
     /**

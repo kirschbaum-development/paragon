@@ -29,8 +29,11 @@ class EnumGenerator
      */
     public function __construct(protected string $enum, protected EnumBuilder $builder)
     {
+        /** @var string */
+        $generatedPath = config('paragon.enums.paths.generated');
+
         $this->files = Storage::createLocalDriver([
-            'root' => resource_path(config()->string('paragon.enums.paths.generated')),
+            'root' => resource_path($generatedPath),
         ]);
 
         $this->cache = Storage::createLocalDriver([
@@ -63,11 +66,13 @@ class EnumGenerator
     protected function contents(): string
     {
         $code = $this->prepareEnumCode();
+        /** @var string */
+        $abstractClass = config('paragon.enums.abstract-class');
 
         return str(file_get_contents($this->builder->stubPath()) ?: null)
             ->replace('{{ Path }}', $this->relativePath())
             ->replace('{{ Enum }}', class_basename($this->enum))
-            ->replace('{{ Abstract }}', config()->string('paragon.enums.abstract-class'))
+            ->replace('{{ Abstract }}', $abstractClass)
             ->replace('{{ TypeDefinition }}', $code->get('type') ?? '')
             ->replace('{{ Cases }}', $code->get('cases') ?? '')
             ->replace('{{ Getters }}', $code->get('getters') ?? '');

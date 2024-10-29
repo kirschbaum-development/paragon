@@ -47,7 +47,10 @@ class GenerateEnumsCommand extends Command
      */
     protected function enums(): Collection
     {
-        return DiscoverEnums::within(app_path((string) config('paragon.enums.paths.php')))
+        /** @var string */
+        $phpPath = config('paragon.enums.paths.php');
+
+        return DiscoverEnums::within(app_path($phpPath))
             ->reject(function ($enum) {
                 if (! enum_exists($enum)) {
                     return true;
