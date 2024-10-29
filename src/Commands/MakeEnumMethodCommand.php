@@ -15,7 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 use function Laravel\Prompts\text;
 
-#[AsCommand(name: 'paragon:enum-method', description: 'Create a new typescript enum method')]
+#[AsCommand(name: 'paragon:enum:add-method', description: 'Create a new global typescript method to be applied to every generated enum')]
 class MakeEnumMethodCommand extends GeneratorCommand
 {
     /**
