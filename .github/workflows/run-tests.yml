@@ -1,4 +1,4 @@
-name: run-tests
+name: CI
 
 on:
   push:
@@ -62,7 +62,7 @@ jobs:
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
           composer require "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
-          composer require "pestphp/pest:${{ matrix.pest }}" "pestphp/pest-plugin-laravel:${{ matrix.pest }}" --no-interaction --no-update --dev
+          composer require "pestphp/pest:${{ matrix.pest }}" "pestphp/pest-plugin-laravel:${{ matrix.pest }}" "pestphp/pest-plugin-type-coverage:${{ matrix.pest }}" --no-interaction --no-update --dev
           composer update --prefer-dist --no-interaction --no-suggest --dev
           composer dump
 
