@@ -11,17 +11,19 @@ use Kirschbaum\Paragon\Concerns\Builders\EnumJsBuilder;
 use Kirschbaum\Paragon\Concerns\Builders\EnumTsBuilder;
 use Kirschbaum\Paragon\Concerns\DiscoverEnums;
 use Kirschbaum\Paragon\Concerns\GenerateAs;
+use Kirschbaum\Paragon\Concerns\HasCommandLineOptions;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use Kirschbaum\Paragon\Generators\AbstractEnumGenerator;
 use Kirschbaum\Paragon\Generators\EnumGenerator;
 use ReflectionEnum;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Input\InputOption;
 use UnitEnum;
 
 #[AsCommand(name: 'paragon:generate-enums', description: 'Generate Typescript versions of existing PHP enums')]
 class GenerateEnumsCommand extends Command
 {
+    use HasCommandLineOptions;
+
     /**
      * Execute the console command.
      */
@@ -49,7 +51,7 @@ class GenerateEnumsCommand extends Command
      */
     protected function enums(): Collection
     {
-        /** @var string */
+        /** @var string $phpPath */
         $phpPath = config('paragon.enums.paths.php');
 
         return DiscoverEnums::within(app_path($phpPath))
@@ -73,38 +75,11 @@ class GenerateEnumsCommand extends Command
 
     protected function builder(): EnumBuilder
     {
-        /** @var string */
-        $generateAs = config('paragon.generate-as');
-
-        $builder = match (true) {
-            $this->option('javascript') => EnumJsBuilder::class,
-            $this->option('typescript') => EnumTsBuilder::class,
-            default => GenerateAs::from($generateAs)->builder()
+        $builder = match ($this->generateAs()) {
+            GenerateAs::Javascript => EnumJsBuilder::class,
+            GenerateAs::TypeScript => EnumTsBuilder::class,
         };
 
         return app($builder);
-    }
-
-    /**
-     * Get the console command options.
-     *
-     * @return array<int, InputOption>
-     */
-    protected function getOptions(): array
-    {
-        return [
-            new InputOption(
-                name: 'javascript',
-                shortcut: 'j',
-                mode: InputOption::VALUE_NONE,
-                description: 'Output Javascript files',
-            ),
-            new InputOption(
-                name: 'typescript',
-                shortcut: 't',
-                mode: InputOption::VALUE_NONE,
-                description: 'Output TypeScript files',
-            ),
-        ];
     }
 }
