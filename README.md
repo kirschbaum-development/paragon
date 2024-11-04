@@ -86,7 +86,7 @@ The following method would become accessible using TypeScript:
 ```ts
 Status.Active.label() // 'Active'
 Status.Inactive.label() // 'Inactive'
-Status.Active.color() // 'bg-greed-100'
+Status.Active.color() // 'bg-green-100'
 Status.Inactive.color() // 'bg-red-100'
 ```
 
