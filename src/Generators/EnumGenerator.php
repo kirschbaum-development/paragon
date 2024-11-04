@@ -16,9 +16,9 @@ use ReflectionMethod;
 
 class EnumGenerator
 {
-    protected Filesystem $cache;
+    protected static Filesystem $cache;
 
-    protected Filesystem $files;
+    protected static Filesystem $files;
 
     protected ReflectionEnum $reflector;
 
@@ -27,11 +27,11 @@ class EnumGenerator
      */
     public function __construct(protected ReflectionEnum $enum, protected EnumBuilder $builder)
     {
-        $this->files = Storage::createLocalDriver([
+        static::$files = Storage::createLocalDriver([
             'root' => resource_path(config()->string('paragon.enums.paths.generated')),
         ]);
 
-        $this->cache = Storage::createLocalDriver([
+        static::$cache = Storage::createLocalDriver([
             'root' => storage_path('framework/cache/paragon'),
         ]);
     }
@@ -42,7 +42,7 @@ class EnumGenerator
             return false;
         }
 
-        $this->files->put($this->path(), $this->contents());
+        static::$files->put($this->path(), $this->contents());
 
         $this->cacheEnum();
 
@@ -217,7 +217,7 @@ class EnumGenerator
 
     protected function generatedFileExists(): bool
     {
-        return $this->files->exists($this->path());
+        return static::$files->exists($this->path());
     }
 
     /*
@@ -228,7 +228,7 @@ class EnumGenerator
 
     protected function cached(): bool
     {
-        return $this->cache->get($this->hashFilename()) === $this->hashFile();
+        return static::$cache->get($this->hashFilename()) === $this->hashFile();
     }
 
     protected function hashFilename(): string
@@ -243,6 +243,6 @@ class EnumGenerator
 
     protected function cacheEnum(): void
     {
-        $this->cache->put($this->hashFilename(), $this->hashFile());
+        static::$cache->put($this->hashFilename(), $this->hashFile());
     }
 }
