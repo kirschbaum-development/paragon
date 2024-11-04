@@ -3,7 +3,7 @@
 namespace Kirschbaum\Paragon\Concerns;
 
 use Illuminate\Support\Collection;
-use ReflectionClass;
+use ReflectionEnum;
 use ReflectionException;
 use SplFileInfo;
 use Symfony\Component\Finder\Finder;
@@ -16,7 +16,7 @@ class DiscoverEnums
      *
      * @param  array<int, string>|string  $path
      *
-     * @return Collection<class-string<UnitEnum>, class-string<UnitEnum>>
+     * @return Collection<int, ReflectionEnum>
      */
     public static function within(array|string $path): Collection
     {
@@ -28,7 +28,7 @@ class DiscoverEnums
      *
      * @param  Finder<string, SplFileInfo>  $files
      *
-     * @return Collection<class-string<UnitEnum>, class-string<UnitEnum>>
+     * @return Collection<int, ReflectionEnum>
      */
     protected static function getEnums(Finder $files): Collection
     {
@@ -38,43 +38,58 @@ class DiscoverEnums
         $fileCollection = collect($files);
 
         return $fileCollection
-            ->mapWithKeys(function (SplFileInfo $file) {
+            ->map(function (SplFileInfo $file) {
                 try {
-                    if (! class_exists($enum = static::classFromFile($file))) {
-                        return [];
-                    }
-
-                    $reflector = new ReflectionClass($enum);
+                    return static::classFromFile($file);
                 } catch (ReflectionException) {
-                    return [];
+                    return false;
                 }
-
-                return $reflector->isEnum()
-                    ? [$enum => $enum]
-                    : [];
             })
-            ->filter();
+            ->filter(fn ($enum) => $enum instanceof ReflectionEnum);
     }
 
     /**
      * Extract the class name from the given file path.
      *
-     * @return class-string<UnitEnum>
+     * @throws ReflectionException
      */
-    protected static function classFromFile(SplFileInfo $file): string
+    protected static function classFromFile(SplFileInfo $file): ReflectionEnum|false
     {
+        $handle = fopen($file->getRealPath(), 'r');
+
+        if (! $handle) {
+            return false;
+        }
+
+        $namespace = null;
+        $enumClass = null;
+
+        while (($line = fgets($handle)) !== false) {
+            if (preg_match('/^namespace\s+([^;]+);/', $line, $matches)) {
+                $namespace = $matches[1];
+            }
+
+            if (preg_match('/^enum\s+(\w+)(?:\s*:\s*\w+)?/', $line, $matches)) {
+                $enumClass = $matches[1];
+            }
+
+            if (
+                ($namespace && $enumClass)
+                || preg_match('/\b(class|trait|interface)\b/', $line)
+            ) {
+                break;
+            }
+        }
+
+        fclose($handle);
+
         /**
-         * @var class-string<UnitEnum>
+         * @var class-string<UnitEnum>|false $enum
          */
-        return str($file->getRealPath())
-            ->replaceFirst(base_path(), '')
-            ->trim(DIRECTORY_SEPARATOR)
-            ->replaceLast('.php', '')
-            ->ucfirst()
-            ->replace(
-                search: [DIRECTORY_SEPARATOR, ucfirst(basename(app()->path())) . '\\'],
-                replace: ['\\', app()->getNamespace()]
-            )
-            ->toString();
+        $enum = $namespace && $enumClass
+            ? "{$namespace}\\{$enumClass}"
+            : false;
+
+        return $enum ? new ReflectionEnum($enum) : false;
     }
 }
