@@ -19,7 +19,7 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
 use UnitEnum;
 
-#[AsCommand(name: 'paragon:generate-enums', description: 'Generate Typescript versions of existing PHP enums')]
+#[AsCommand(name: 'paragon:enum:generate', description: 'Generate Typescript versions of existing PHP enums')]
 class GenerateEnumsCommand extends Command
 {
     /**
