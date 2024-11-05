@@ -48,7 +48,12 @@ class GenerateEnumsCommand extends Command
      */
     protected function enums(): Collection
     {
-        return DiscoverEnums::within(app_path(config()->string('paragon.enums.paths.php')))
+        /**
+         * @var string $path
+         */
+        $path = config('paragon.enums.paths.php');
+
+        return DiscoverEnums::within(app_path($path))
             ->reject(function (ReflectionEnum $enum) {
                 $paths = Arr::map(
                     Arr::wrap(config('paragon.enums.paths.ignore')),
