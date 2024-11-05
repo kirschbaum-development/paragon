@@ -17,7 +17,6 @@ use Kirschbaum\Paragon\Generators\EnumGenerator;
 use ReflectionEnum;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
-use UnitEnum;
 
 #[AsCommand(name: 'paragon:enum:generate', description: 'Generate Typescript versions of existing PHP enums')]
 class GenerateEnumsCommand extends Command
@@ -30,7 +29,7 @@ class GenerateEnumsCommand extends Command
         $builder = $this->builder();
 
         $generatedEnums = $this->enums()
-            ->map(fn (string $enum) => app(EnumGenerator::class, ['enum' => $enum, 'builder' => $builder])())
+            ->map(fn (ReflectionEnum $enum) => app(EnumGenerator::class, ['enum' => $enum, 'builder' => $builder])())
             ->filter();
 
         $this->components->info("{$generatedEnums->count()} enums have been (re)generated.");
@@ -45,35 +44,33 @@ class GenerateEnumsCommand extends Command
     /**
      * Gather all enum namespaces for searching.
      *
-     * @return Collection<int,class-string<UnitEnum>>
+     * @return Collection<int, ReflectionEnum>
      */
     protected function enums(): Collection
     {
-        /** @var string */
-        $phpPath = config('paragon.enums.paths.php');
+        /**
+         * @var string $path
+         */
+        $path = config('paragon.enums.paths.php');
 
-        return DiscoverEnums::within(app_path($phpPath))
-            ->reject(function (string $enum) {
-                if (! enum_exists($enum)) {
-                    return true;
-                }
-
-                $reflector = new ReflectionEnum($enum);
-
-                $pathsToIgnore = Arr::map(
+        return DiscoverEnums::within(app_path($path))
+            ->reject(function (ReflectionEnum $enum) {
+                $paths = Arr::map(
                     Arr::wrap(config('paragon.enums.paths.ignore')),
                     fn (string $path): string => Str::finish(app_path($path), '/'),
                 );
 
-                return $reflector->getAttributes(IgnoreParagon::class)
-                    || Str::startsWith((string) $reflector->getFileName(), $pathsToIgnore);
+                return $enum->getAttributes(IgnoreParagon::class)
+                    || Str::startsWith((string) $enum->getFileName(), $paths);
             })
             ->values();
     }
 
     protected function builder(): EnumBuilder
     {
-        /** @var string */
+        /**
+         * @var string $generateAs
+         */
         $generateAs = config('paragon.generate-as');
 
         $builder = match (true) {
