@@ -7,12 +7,17 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Fluent;
+use Illuminate\Support\Str;
 use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
 use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
 use ReflectionEnumUnitCase;
 use ReflectionMethod;
+use Symfony\Component\Filesystem\Filesystem as FileUtility;
+use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class EnumGenerator
 {
@@ -20,13 +25,21 @@ class EnumGenerator
 
     protected static Filesystem $files;
 
+    /**
+     * @var Collection<int, SplFileInfo>
+     */
+    protected Collection $imports;
+
     protected ReflectionEnum $reflector;
 
     /**
      * Create new EnumGenerator instance.
      */
-    public function __construct(protected ReflectionEnum $enum, protected EnumBuilder $builder)
-    {
+    public function __construct(
+        protected ReflectionEnum $enum,
+        protected EnumBuilder $builder,
+        protected bool $forceRegenerate = false
+    ) {
         /**
          * @var string $path
          */
@@ -39,17 +52,24 @@ class EnumGenerator
         static::$cache = Storage::createLocalDriver([
             'root' => storage_path('framework/cache/paragon'),
         ]);
+
+        $this->findImports();
     }
 
     public function __invoke(): bool
     {
-        if ($this->generatedFileExists() && $this->cached()) {
+        if (
+            $this->generatedFileExists()
+            && $this->cached()
+            && $this->methodsCached()
+        ) {
             return false;
         }
 
         static::$files->put($this->path(), $this->contents());
 
         $this->cacheEnum();
+        $this->cacheMethods();
 
         return true;
     }
@@ -59,8 +79,9 @@ class EnumGenerator
      */
     protected function contents(): string
     {
+        $imports = $this->imports();
+        $suffix = $imports->count() ? PHP_EOL : '';
         $code = $this->prepareEnumCode();
-
         /**
          * @var string $abstractName
          */
@@ -70,9 +91,42 @@ class EnumGenerator
             ->replace('{{ Path }}', $this->relativePath())
             ->replace('{{ Enum }}', $this->enum->getShortName())
             ->replace('{{ Abstract }}', $abstractName)
+            ->replace('{{ Imports }}', "{$imports->join('')}")
+            ->replace('{{ Methods }}', "{$this->importMethods($imports->keys())}{$suffix}")
             ->replace('{{ TypeDefinition }}', $code->get('type') ?? '')
             ->replace('{{ Cases }}', $code->get('cases') ?? '')
             ->replace('{{ Getters }}', $code->get('getters') ?? '');
+    }
+
+    /**
+     * Build out the actual enum case object including the name, value if needed, and any public methods.
+     *
+     * @return Collection<string, string>
+     */
+    protected function imports(): Collection
+    {
+        return $this->imports
+            ->mapWithKeys(function (SplFileInfo $file): array {
+                $filesystem = new FileUtility();
+
+                /**
+                 * @var string $generatedPath
+                 */
+                $generatedPath = config('paragon.enums.paths.generated');
+
+                $relativeFilePath = $filesystem->makePathRelative(
+                    $file->getPath(),
+                    resource_path($generatedPath)
+                );
+
+                $name = $file->getBasename($this->builder->fileExtension());
+
+                /**
+                 * @var array<string,string>
+                 */
+                return [$name => "import {$name} from '{$relativeFilePath}{$file->getFilename()}';" . PHP_EOL];
+            })
+            ->sort();
     }
 
     /**
@@ -215,6 +269,18 @@ class EnumGenerator
     }
 
     /**
+     * Build out the actual enum case object including the name, value if needed, and any public methods.
+     *
+     * @param  Collection<int, string>  $methods
+     */
+    protected function importMethods(Collection $methods): string
+    {
+        return $methods
+            ->map(fn (string $method): string => PHP_EOL . "{$this->enum->getShortName()}.{$method} = {$method};")
+            ->join('');
+    }
+
+    /**
      * Path where the enum will be saved.
      */
     protected function path(): string
@@ -230,6 +296,24 @@ class EnumGenerator
         return static::$files->exists($this->path());
     }
 
+    protected function findImports(): void
+    {
+        $methodsPath = config('paragon.enums.paths.methods')
+            . DIRECTORY_SEPARATOR
+            . Str::replace('\\', '/', $this->enum->getName());
+
+        try {
+            $this->imports = collect(iterator_to_array(
+                Finder::create()
+                    ->files()
+                    ->depth(0)
+                    ->in(resource_path($methodsPath))
+            ))->values();
+        } catch (DirectoryNotFoundException) {
+            $this->imports = collect();
+        }
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Enum Caching
@@ -238,21 +322,49 @@ class EnumGenerator
 
     protected function cached(): bool
     {
-        return static::$cache->get($this->hashFilename()) === $this->hashFile();
+        return static::$cache->get($this->hashFilename()) === $this->hashFileContents();
     }
 
     protected function hashFilename(): string
     {
-        return md5((string) $this->enum->getFileName());
+        return hash('sha256', (string) $this->enum->getFileName());
     }
 
-    protected function hashFile(): string
+    protected function hashFileContents(): string
     {
-        return (string) md5_file((string) $this->enum->getFileName());
+        return (string) hash_file('sha256', (string) $this->enum->getFileName());
     }
 
     protected function cacheEnum(): void
     {
-        static::$cache->put($this->hashFilename(), $this->hashFile());
+        static::$cache->put($this->hashFilename(), $this->hashFileContents());
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enum Method Caching
+    |--------------------------------------------------------------------------
+    */
+
+    protected function methodsCached(): bool
+    {
+        return static::$cache->get($this->hashMethodsPath()) === $this->hashMethodFileNames();
+    }
+
+    protected function hashMethodsPath(): string
+    {
+        return hash('sha256', $this->path());
+    }
+
+    protected function hashMethodFileNames(): string
+    {
+        $files = $this->imports->map(fn (SplFileInfo $import) => $import->getBasename());
+
+        return $files->isNotEmpty() ? hash('sha256', $files->join('')) : '';
+    }
+
+    protected function cacheMethods(): void
+    {
+        static::$cache->put($this->hashMethodsPath(), $this->hashMethodFileNames());
     }
 }

@@ -6,10 +6,10 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Kirschbaum\Paragon\Concerns\Builders\EnumBuilder;
-use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem as FileUtility;
 use Symfony\Component\Finder\Exception\DirectoryNotFoundException;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 class AbstractEnumGenerator
 {
@@ -17,7 +17,9 @@ class AbstractEnumGenerator
 
     public function __construct(protected EnumBuilder $builder)
     {
-        /** @var string */
+        /**
+         * @var string $generatedPath
+         */
         $generatedPath = config('paragon.enums.paths.generated');
 
         $this->files = Storage::createLocalDriver([
@@ -37,7 +39,9 @@ class AbstractEnumGenerator
     {
         $imports = $this->imports();
         $suffix = $imports->count() ? PHP_EOL : '';
-        /** @var string */
+        /**
+         * @var string $abstractClass
+         */
         $abstractClass = config('paragon.enums.abstract-class');
 
         return str((string) file_get_contents($this->builder->abstractStubPath()))
@@ -53,12 +57,15 @@ class AbstractEnumGenerator
      */
     protected function imports(): Collection
     {
-        /** @var string */
+        /**
+         * @var string $methodsPath
+         */
         $methodsPath = config('paragon.enums.paths.methods');
 
         try {
             $files = Finder::create()
                 ->files()
+                ->depth(0)
                 ->in(resource_path($methodsPath));
         } catch (DirectoryNotFoundException) {
             return collect();
@@ -72,7 +79,9 @@ class AbstractEnumGenerator
         return $fileCollection
             ->mapWithKeys(function (SplFileInfo $file): array {
                 $filesystem = new FileUtility();
-                /** @var string */
+                /**
+                 * @var string $generatedPath
+                 */
                 $generatedPath = config('paragon.enums.paths.generated');
 
                 $relativeFilePath = $filesystem->makePathRelative(
@@ -80,9 +89,11 @@ class AbstractEnumGenerator
                     resource_path($generatedPath)
                 );
 
-                $name = (string) str($file->getFileName())->before('.');
+                $name = $file->getBasename($this->builder->fileExtension());
 
-                /** @var array<string,string> */
+                /**
+                 * @var array<string,string>
+                 */
                 return [$name => "import {$name} from '{$relativeFilePath}{$file->getFilename()}';" . PHP_EOL];
             })
             ->sort();

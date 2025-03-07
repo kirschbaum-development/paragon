@@ -5,8 +5,8 @@ namespace Kirschbaum\Paragon\Concerns;
 use Illuminate\Support\Collection;
 use ReflectionEnum;
 use ReflectionException;
-use SplFileInfo;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 use UnitEnum;
 
 class DiscoverEnums
