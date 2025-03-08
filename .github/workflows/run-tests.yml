@@ -11,32 +11,64 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php: [ 8.1, 8.2, 8.3 ]
-        laravel: [ 10.*, 11.* ]
+        php: [ 8.1, 8.2, 8.3, 8.4 ]
+        laravel: [ 10.*, 11.*, 12.* ]
         include:
           - php: 8.1
             laravel: 10.*
             pest: 2.*
             testbench: 8.*
+            larastan: 2.*
           - php: 8.2
             laravel: 10.*
             pest: 2.*
             testbench: 8.*
+            larastan: 2.*
           - php: 8.3
             laravel: 10.*
             pest: 2.*
             testbench: 8.*
+            larastan: 2.*
+          - php: 8.4
+            laravel: 10.*
+            pest: 2.*
+            testbench: 8.*
+            larastan: 2.*
           - php: 8.2
             laravel: 11.*
             pest: 3.*
             testbench: 9.*
+            larastan: 2.*
           - php: 8.3
             laravel: 11.*
             pest: 3.*
             testbench: 9.*
+            larastan: 2.*
+          - php: 8.4
+            laravel: 11.*
+            pest: 3.*
+            testbench: 9.*
+            larastan: 2.*
+          - php: 8.2
+            laravel: 12.*
+            pest: 3.*
+            testbench: 10.*
+            larastan: 3.*
+          - php: 8.3
+            laravel: 12.*
+            pest: 3.*
+            testbench: 10.*
+            larastan: 3.*
+          - php: 8.4
+            laravel: 12.*
+            pest: 3.*
+            testbench: 10.*
+            larastan: 3.*
         exclude:
           - php: 8.1
             laravel: 11.*
+          - php: 8.1
+            laravel: 12.*
 
     name: Paragon Tests - PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
@@ -45,7 +77,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
           key: dependencies-${{ matrix.laravel }}-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
@@ -61,9 +93,10 @@ jobs:
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
-          composer require "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update --dev
-          composer require "pestphp/pest:${{ matrix.pest }}" "pestphp/pest-plugin-laravel:${{ matrix.pest }}" "pestphp/pest-plugin-type-coverage:${{ matrix.pest }}" --no-interaction --no-update --dev
-          composer update --prefer-dist --no-interaction --no-suggest --dev
+          composer require "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+          composer require "pestphp/pest:${{ matrix.pest }}" "pestphp/pest-plugin-laravel:${{ matrix.pest }}" "pestphp/pest-plugin-type-coverage:${{ matrix.pest }}" --no-interaction --no-update
+          composer require "larastan/larastan:${{ matrix.larastan }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction
           composer dump
 
       - name: Execute tests
@@ -79,7 +112,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
           key: dependencies-composer-${{ hashFiles('composer.json') }}
@@ -92,7 +125,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install --no-interaction --no-suggest --dev
+          composer install --no-interaction
           composer dump
 
       - name: Execute Pint
@@ -108,7 +141,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Cache dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache/files
           key: dependencies-composer-${{ hashFiles('composer.json') }}
@@ -121,7 +154,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          composer install --no-interaction --no-suggest --dev
+          composer install --no-interaction
           composer dump
 
       - name: Execute Larastan
