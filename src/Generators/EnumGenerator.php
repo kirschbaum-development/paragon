@@ -114,17 +114,17 @@ class EnumGenerator
                  */
                 $generatedPath = config('paragon.enums.paths.generated');
 
-                $relativeFilePath = $filesystem->makePathRelative(
-                    $file->getPath(),
-                    resource_path($generatedPath)
-                );
+                $relativeFilePath = Str::of($filesystem->makePathRelative(
+                    $file->getPathname(),
+                    resource_path($generatedPath) . DIRECTORY_SEPARATOR . $this->filePath()
+                ))->rtrim('/');
 
                 $name = $file->getBasename($this->builder->fileExtension());
 
                 /**
                  * @var array<string,string>
                  */
-                return [$name => "import {$name} from '{$relativeFilePath}{$file->getFilename()}';" . PHP_EOL];
+                return [$name => "import {$name} from '{$relativeFilePath}';" . PHP_EOL];
             })
             ->sort();
     }
@@ -281,7 +281,7 @@ class EnumGenerator
     }
 
     /**
-     * Path where the enum will be saved.
+     * File path where the enum will be saved.
      */
     protected function path(): string
     {
@@ -289,6 +289,18 @@ class EnumGenerator
             ->after('App\\Enums\\')
             ->replace('\\', '/')
             ->finish($this->builder->fileExtension());
+    }
+
+    /**
+     * Directory path where the enum will be saved.
+     */
+    protected function filePath(): string
+    {
+        if (Str::contains($this->path(), '/')) {
+            return Str::beforeLast($this->path(), '/');
+        }
+
+        return '';
     }
 
     protected function generatedFileExists(): bool

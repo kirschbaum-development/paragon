@@ -12,4 +12,6 @@ class {{ Enum }} extends {{ Abstract }} {
 {{ Getters }}
 }
 {{ Methods }}
+export type { {{ Enum }}Definition };
+
 export default {{ Enum }};

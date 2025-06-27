@@ -32,8 +32,8 @@ class MakeEnumMethodCommand extends GeneratorCommand
     /**
      * Execute the console command.
      *
-     * @throws Exception
      * @throws FileNotFoundException
+     * @throws Throwable
      */
     public function handle(): ?bool
     {
