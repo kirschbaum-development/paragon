@@ -98,7 +98,15 @@ While this package ignores static methods on the PHP Enums, we allow you to crea
 php artisan paragon:enum:add-method
 ```
 
-This will create a new file at `resources/js/vendors/paragon/enums` containing a method. You are free to do whatever you need inside this file. You have direct access to `this.items` which allows you to interact with the enum cases in whatever way you need. Just keep in mind that because the items are "frozen", you can't mutate them directly. An example would be to have a method that automatically generates a select list from your Enum.
+You will be prompted to search for the enum this method should belong to. It will be placed inside a directory that matches the namespace of the enum. For example, an enum at `App\Enums\Status` would place an enum method file at `resources/js/vendors/paragon/enums/App/Enums/Status`. You are free to do whatever you need inside this file. You have direct access to `this.items` which allows you to interact with the enum cases in whatever way you need. Just keep in mind that because the items are "frozen", you can't mutate them directly. An example would be to have a method that automatically generates a select list from your Enum.
+
+If you need to create a method that is available to every enum, just create an enum method with the `--global` or `-g` flag.
+
+```bash
+php artisan paragon:enum-method --global
+```
+
+This will create a new file at `resources/js/vendors/paragon/enums` containing a method.
 
 ### Ignoring Enums Or Public Methods
 

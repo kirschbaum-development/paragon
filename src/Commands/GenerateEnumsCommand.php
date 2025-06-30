@@ -28,17 +28,26 @@ class GenerateEnumsCommand extends Command
     {
         $builder = $this->builder();
 
+        $this->generateEnums($builder);
+        $this->generateAbstractEnum($builder);
+
+        return self::SUCCESS;
+    }
+
+    protected function generateEnums(EnumBuilder $builder): void
+    {
         $generatedEnums = $this->enums()
             ->map(fn (ReflectionEnum $enum) => app(EnumGenerator::class, ['enum' => $enum, 'builder' => $builder])())
             ->filter();
 
         $this->components->info("{$generatedEnums->count()} enums have been (re)generated.");
+    }
 
+    protected function generateAbstractEnum(EnumBuilder $builder): void
+    {
         app(AbstractEnumGenerator::class, ['builder' => $builder])();
 
         $this->components->info('Abstract enum class has been (re)generated.');
-
-        return self::SUCCESS;
     }
 
     /**

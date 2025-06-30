@@ -1,5 +1,5 @@
 import {{ Abstract }} from '{{ Path }}{{ Abstract }}.js';
-
+{{ Imports }}
 class {{ Enum }} extends {{ Abstract }} {
     static items = Object.freeze({
 {{ Cases }},
@@ -7,5 +7,5 @@ class {{ Enum }} extends {{ Abstract }} {
 
 {{ Getters }}
 }
-
+{{ Methods }}
 export default {{ Enum }};
