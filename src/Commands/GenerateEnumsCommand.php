@@ -18,7 +18,7 @@ use ReflectionEnum;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputOption;
 
-#[AsCommand(name: 'paragon:enum:generate', description: 'Generate Typescript versions of existing PHP enums')]
+#[AsCommand(name: 'paragon:enum:generate', description: 'Generate TypeScript/Javascript versions of existing PHP enums')]
 class GenerateEnumsCommand extends Command
 {
     /**

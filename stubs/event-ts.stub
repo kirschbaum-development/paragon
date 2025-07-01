@@ -1,5 +1,5 @@
-interface AppEvents {{ Interface }}
+interface EventsInterface {{ Interface }}
 
-const events: AppEvents = {{ Events }};
+const Events: EventsInterface = {{ Events }};
 
-export default events;
+export default Events;

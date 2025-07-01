@@ -24,6 +24,7 @@ class TestCase extends Orchestra
         tap($app['config'], function (Repository $config) {
             $config->set('paragon.enums.paths.php', 'Enums');
             $config->set('paragon.enums.paths.ignore', 'Enums/Ignore');
+            $config->set('paragon.events.paths.php', 'Events');
         });
     }
 
@@ -33,6 +34,7 @@ class TestCase extends Orchestra
             $filesystem = new Filesystem();
 
             $filesystem->mirror(__DIR__ . '/Fixtures', app_path(config('paragon.enums.paths.php')));
+            $filesystem->mirror(__DIR__ . '/Fixtures', app_path(config('paragon.events.paths.php')));
         });
 
         $this->beforeApplicationDestroyed(function () {
@@ -42,6 +44,7 @@ class TestCase extends Orchestra
                 app_path('Enums'),
                 resource_path(config('paragon.enums.paths.generated')),
                 resource_path(config('paragon.enums.paths.methods')),
+                resource_path(config('paragon.events.paths.generated')),
             ]);
         });
 

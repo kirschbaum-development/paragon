@@ -7,6 +7,7 @@ use const JSON_PRETTY_PRINT;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use ReflectionClass;
 
 class EventGenerator
 {
@@ -15,12 +16,19 @@ class EventGenerator
     protected Filesystem $files;
 
     /**
-     * Create new EventGenerator instance.
+     * Create a new EventGenerator instance.
+     *
+     * @param  Collection<string, class-string>  $events
      */
     public function __construct(protected Collection $events, protected bool $generateJavascript = false)
     {
+        /**
+         * @var string $path
+         */
+        $path = config('paragon.events.paths.generated');
+
         $this->files = Storage::createLocalDriver([
-            'root' => resource_path(config('paragon.events.paths.generated')),
+            'root' => resource_path($path),
         ]);
     }
 
@@ -32,29 +40,55 @@ class EventGenerator
     }
 
     /**
-     * Typescript event file contents.
+     * TypeScript event file contents.
      */
     protected function contents(): string
     {
-        $object = $this->events
-            ->mapWithKeys(fn ($value, $key) => [str($value)->replace('\\', '.')->toString() => $value])
-            ->undot()
-            ->toJson(JSON_PRETTY_PRINT);
+        return str(file_get_contents($this->stubPath()) ?: null)
+            ->replace('{{ Events }}', $this->events() ?? '')
+            ->replace('{{ Interface }}', $this->interface() ?? '');
+    }
 
-        $interface = $this->events
-            ->map(function ($path) {
-                $parts = explode('\\', $path);
-                array_pop($parts);
+    /**
+     * Determine the broadcastable event names.
+     */
+    protected function events(): ?string
+    {
+        $events = $this->events
+            ->map(function ($value) {
+                $reflection = new ReflectionClass($value);
 
-                return implode('\\', $parts);
+                if ($reflection->hasMethod('broadcastAs')) {
+                    $instance = $reflection->newInstanceWithoutConstructor();
+                    $method = $reflection->getMethod('broadcastAs');
+
+                    /**
+                     * @var string $name
+                     */
+                    $name = $method->invoke($instance);
+                }
+
+                $name ??= $value;
+
+                return ".{$name}";
             })
-            ->mapWithKeys(fn ($value, $key) => [str($value)->replace('\\', '.')->toString() => ['[key:string]' => 'string | { [subKey: string]: string }']])
             ->undot()
             ->toJson(JSON_PRETTY_PRINT);
 
-        return str(file_get_contents($this->stubPath()))
-            ->replace('{{ Interface }}', str($interface)->replace('"', ''))
-            ->replace('{{ Events }}', $object);
+        return preg_replace('/"([^"]+)":/', '$1:', $events);
+    }
+
+    /**
+     * Determine the TypeScript event interface.
+     */
+    protected function interface(): ?string
+    {
+        $interface = $this->events
+            ->map(fn () => 'string')
+            ->undot()
+            ->toJson(JSON_PRETTY_PRINT);
+
+        return str($interface)->replace('"', '');
     }
 
     /**

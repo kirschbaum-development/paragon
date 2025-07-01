@@ -39,6 +39,7 @@ return [
             'methods' => 'js/vendors/paragon/enums',
         ],
     ],
+
     'events' => [
         'paths' => [
             'php' => 'Events',
