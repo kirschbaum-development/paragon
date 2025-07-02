@@ -1,0 +1,5 @@
+interface EventsInterface {{ Interface }}
+
+const Events: EventsInterface = {{ Events }};
+
+export default Events;

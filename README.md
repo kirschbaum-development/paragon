@@ -6,12 +6,28 @@
 
 A tool for automatically generating typescript/javascript objects and utilities based on their PHP counterparts.
 
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Enums](#enums)
+  - [Custom Enum Methods](#custom-enum-methods)
+  - [Ignoring Enums or Methods](#ignoring-enums-or-public-methods)
+  - [Configuration](#configuration)
+  - [Recommendations](#recommendations)
+  - [Automatically Regenerate](#automatically-re-generating-when-modifying-php-enums)
+  - [Technical Details](#technical-details-)
+- [Events](#broadcast-events)
+  - [Usage](#usage)
+
+
 ## Requirements
 
 | Laravel Version | Paragon Version |
 |:----------------|:----------------|
-| 11.0            | 1.0.x           |
-| 10.0            | 1.0.x           |
+| 12.0            | ^1.0           |
+| 11.0            | ^1.0           |
+| 10.0            | ^1.0            |
 
 ## Installation
 
@@ -19,7 +35,7 @@ A tool for automatically generating typescript/javascript objects and utilities 
 composer require kirschbaum-development/paragon
 ```
 
-### Enums
+## Enums
 
 **TL;DR:** Run the following command to generate Typescript (or Javascript) enums from your PHP enums:
 
@@ -59,7 +75,7 @@ This package also supports generating Javascript enums. To do so, simply pass th
 php artisan paragon:enum:generate --javascript
 ```
 
-### Public Methods
+#### Public Methods
 
 A good majority of the time it is useful to use public methods to return a proper human-readable label or some other functionality on an enum. Paragon got this covered too. Assuming the following method exists on the above `Status` enum:
 
@@ -90,7 +106,7 @@ Status.Active.color() // 'bg-green-100'
 Status.Inactive.color() // 'bg-red-100'
 ```
 
-### Additional Enum Methods
+### Custom Enum Methods
 
 While this package ignores static methods on the PHP Enums, we allow you to create additional methods that Paragon will make available for every generated Enum.
 
@@ -127,12 +143,12 @@ use Kirschbaum\Paragon\Concerns\IgnoreParagon;
 
 enum Status
 {
-    ...
+    // ...
     
     #[IgnoreParagon]
     public method ignoreMe()
     {
-        ...
+        // ...
     }
 }
 ```
@@ -145,7 +161,7 @@ You can publish the configuration file by running `php artisan vendor:publish` a
 
 It is recommended that the generated path for the enums is added to the `.gitignore` file. Make sure to run this command during deployment if you do this.
 
-## Automatically Re-generating When Modifying PHP Enums
+### Automatically Re-generating When Modifying PHP Enums
 
 Install the [`vite-plugin-watch`](https://www.npmjs.com/package/vite-plugin-watch) plugin in your project via `npm`:
 
@@ -170,7 +186,7 @@ export default defineConfig({
 });
 ```
 
-## Technical Details 🤓
+### Technical Details 🤓
 
 Enums are a fantastic addition to the PHP-verse but are really lame in the TypeScript-verse. However, it can be annoying trying to get those enum values on the
 front-end of your project. Are you supposed to pass them as a method when returning a view or perhaps via an API? This
@@ -224,3 +240,59 @@ export default Status;
 At first glance it appears as though a lot more stuff is happening, but the above generated code allows us to interact
 with the enum in a nearly identical way as in PHP. And you may notice the generated TypeScript class extends the `Enum`
 class. This gives us some underlying functionality that is available to every enum.
+
+## Broadcast Events
+
+**TL;DR:** Run the following command to generate a Typescript (or Javascript) broadcast event object based on your broadcastable events:
+
+```bash
+php artisan paragon:event:generate
+```
+
+Any events within the `App\Events` namespace will be automatically added to the `Events` object. Just make sure your event implements the `ShouldBroadcast` contract!
+
+If javascript is needed, just make sure to add the `--javascript` or `-j` flag.
+
+### Usage
+
+The primary usage of this tool is for Laravel Echo. Listening to for an event class based on a hard-coded string is not exactly preferable. The can easily get out of sync or just get mistyped.
+
+Here is a quick example event:
+
+```php
+namespace App\Events;
+
+class ParagonGenerated implements ShouldBroadcast
+{ 
+    // ...
+}
+```
+
+Then listen for it with Echo:
+
+```js
+import Events from '@/events/Events.ts';
+
+Echo.channel(...)
+    .listen(Events.ParagonGenerated, /* ... */);
+```
+
+If you have defined a `broadcastOn` method that returns a custom name, this will be handled correctly for you as well.
+
+One thing to note is that if an event namespace starts with `App\Events` or `App`, these will be removed from the dot path within the object. If an event is nested, the dot path will reflect this: For example:
+
+```php
+namespace App\Support;
+
+class NestedEvent implements ShouldBroadcast
+{ 
+    // ...
+}
+```
+
+```js
+import Events from '@/events/Events.ts';
+
+Echo.channel(...)
+    .listen(Events.Support.NestedEvent, /* ... */);
+```

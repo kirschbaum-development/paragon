@@ -33,7 +33,7 @@ class EnumGenerator
     protected ReflectionEnum $reflector;
 
     /**
-     * Create new EnumGenerator instance.
+     * Create a new EnumGenerator instance.
      */
     public function __construct(
         protected ReflectionEnum $enum,
@@ -99,7 +99,7 @@ class EnumGenerator
     }
 
     /**
-     * Build out the actual enum case object including the name, value if needed, and any public methods.
+     * Build out the actual enum case object, including the name, value if needed, and any public methods.
      *
      * @return Collection<string, string>
      */
