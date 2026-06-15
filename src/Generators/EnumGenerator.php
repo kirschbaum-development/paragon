@@ -216,6 +216,8 @@ class EnumGenerator
 
     /**
      * Prepare the value of the enum case object if it is a backed enum.
+     *
+     * @throws \JsonException
      */
     protected function caseValueProperty(ReflectionEnumUnitCase|ReflectionEnumBackedCase $case): string
     {
@@ -228,7 +230,7 @@ class EnumGenerator
                         ? $string->append("{$case->getValue()->value}")
                         : $string,
                     fn ($string) => $case->getValue() instanceof BackedEnum
-                        ? $string->append("'{$case->getValue()->value}'")
+                        ? $string->append(json_encode($case->getValue()->value, JSON_THROW_ON_ERROR))
                         : $string,
                 )
                 ->append(',');
