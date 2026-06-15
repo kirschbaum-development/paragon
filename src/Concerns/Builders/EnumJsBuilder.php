@@ -35,6 +35,8 @@ class EnumJsBuilder implements EnumBuilder
 
     /**
      * Prepare the method and its respective values so it can get injected into the case object.
+     *
+     * @throws \JsonException
      */
     public function caseMethod(ReflectionMethod $method, ReflectionEnumUnitCase|ReflectionEnumBackedCase $case): string
     {
@@ -46,7 +48,7 @@ class EnumJsBuilder implements EnumBuilder
                 $value instanceof BackedEnum => "=> {$class}.{$value->name}",
                 is_numeric($value) => "=> {$value}",
                 is_null($value) => '=> null',
-                default => "=> '{$value}'"
+                default => '=> ' . json_encode($value, JSON_THROW_ON_ERROR)
             })
             ->append(',');
     }

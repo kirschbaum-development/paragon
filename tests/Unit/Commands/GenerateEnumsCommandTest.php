@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EscapedStringBacked;
 use App\Enums\IntegerBacked;
 use App\Enums\NonBacked;
 use App\Enums\StringBacked;
@@ -20,7 +21,7 @@ it('generates string backed enums', function () {
         ->toContain('class StringBacked extends Enum')
         ->toContain(StringBacked::Active->name . ': Object.freeze({')
         ->toContain("name: '" . StringBacked::Active->name . "',")
-        ->toContain("value: '" . StringBacked::Active->value . "',")
+        ->toContain('value: ' . json_encode(StringBacked::Active->value) . ',')
         ->toContain('export default StringBacked;');
 });
 
@@ -62,6 +63,41 @@ it('generates non-backed enums', function () {
         ->toContain('export default NonBacked;');
 });
 
+it('escapes string values and method return values that need it', function () {
+    // Act.
+    $this->artisan(GenerateEnumsCommand::class);
+
+    $path = resource_path(config('paragon.enums.paths.generated') . DIRECTORY_SEPARATOR . 'EscapedStringBacked.ts');
+    $file = file_get_contents($path);
+
+    // Assert.
+    expect($path)->toBeFile()
+        ->and($file)
+        ->toContain('value: ' . json_encode(EscapedStringBacked::Quote->value) . ',')
+        ->toContain('label: (): string => ' . json_encode(EscapedStringBacked::Quote->label()) . ',');
+});
+
+it('throws instead of writing broken output for a value that cannot be encoded as JSON', function () {
+    // Arrange.
+    // Written directly into app_path() rather than tests/Fixtures: GenerateEnumsCommand
+    // processes every enum under that path in a single pass, so a fixture there that
+    // intentionally fails generation would break every test that runs the command.
+    file_put_contents(app_path('Enums/InvalidUtf8Backed.php'), <<<'PHP'
+        <?php
+
+        namespace App\Enums;
+
+        enum InvalidUtf8Backed: string
+        {
+            case Bad = "\xB1\x31";
+        }
+
+        PHP);
+
+    // Act.
+    $this->artisan(GenerateEnumsCommand::class);
+})->throws(JsonException::class);
+
 it('generates enums recursively', function () {
     // Act.
     $this->artisan(GenerateEnumsCommand::class);
@@ -102,7 +138,7 @@ it('creates public methods', function () {
         // type definition
         ->toContain('label();')
         // items objects
-        ->toContain("label: (): string => '" . StringBacked::Active->label() . "',");
+        ->toContain('label: (): string => ' . json_encode(StringBacked::Active->label()) . ',');
 });
 
 it('ignores methods with \'IgnoreParagon\' attribute', function () {

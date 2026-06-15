@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EscapedStringBacked;
 use App\Enums\IntegerBacked;
 use App\Enums\NonBacked;
 use App\Enums\StringBacked;
@@ -20,7 +21,7 @@ it('generates string backed enums', function () {
         ->toContain('class StringBacked extends Enum')
         ->toContain(StringBacked::Active->name . ': Object.freeze({')
         ->toContain("name: '" . StringBacked::Active->name . "',")
-        ->toContain("value: '" . StringBacked::Active->value . "',")
+        ->toContain('value: ' . json_encode(StringBacked::Active->value) . ',')
         ->toContain('export default StringBacked;');
 });
 
@@ -60,6 +61,20 @@ it('generates non-backed enums', function () {
         ->toContain("name: '" . NonBacked::Active->name . "',")
         ->not->toContain('value:')
         ->toContain('export default NonBacked;');
+});
+
+it('escapes string values and method return values that need it', function () {
+    // Act.
+    $this->artisan(GenerateEnumsCommand::class, ['--javascript' => true]);
+
+    $path = resource_path(config('paragon.enums.paths.generated') . DIRECTORY_SEPARATOR . 'EscapedStringBacked.js');
+    $file = file_get_contents($path);
+
+    // Assert.
+    expect($path)->toBeFile()
+        ->and($file)
+        ->toContain('value: ' . json_encode(EscapedStringBacked::Quote->value) . ',')
+        ->toContain('label: () => ' . json_encode(EscapedStringBacked::Quote->label()) . ',');
 });
 
 it('generates enums recursively', function () {
@@ -102,7 +117,7 @@ it('creates public methods', function () {
         // type definition
         ->not->toContain('label();')
         // items objects
-        ->toContain("label: () => '" . StringBacked::Active->label() . "',");
+        ->toContain('label: () => ' . json_encode(StringBacked::Active->label()) . ',');
 });
 
 it('ignores methods with \'IgnoreParagon\' attribute', function () {
